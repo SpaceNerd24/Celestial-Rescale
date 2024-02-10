@@ -9,7 +9,7 @@ namespace Celestial_Rescale
 
         public void Awake()
         {
-            UnityEngine.Debug.Log("[CelestialRescale] Your Current Version: " + number);
+            Debug.Log("[CelestialRescale] Your Current Version: " + number);
         }
     }
 }

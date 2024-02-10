@@ -21,7 +21,7 @@ namespace Celestial_Rescale
                 {
                     body.pqsController.ResetSphere();
 
-                    Debug.Log("[CelestialRescale] Rescaling " + body.name);
+                    Debug.Log("[CelestialRescale] " + " [" + body.name + "] " + body.name);
 
                     double originalRadius = body.Radius;
                     double targetRadius = body.Radius * scaleFactor;
@@ -55,7 +55,7 @@ namespace Celestial_Rescale
 
                     if (body.name == "Kerbin" && body.isHomeWorld == true)
                     {
-                        Debug.Log("[CelestialRescale] " + body.name +" is home world");
+                        Debug.Log("[CelestialRescale] " + " [" + body.name + "] " + " is home world");
                     }
 
                     // Update the Body?
@@ -64,11 +64,11 @@ namespace Celestial_Rescale
                     // Log the new radius (If there is a new one)
                     if (body.Radius == originalRadius)
                     {
-                        Debug.LogError("[CelestialRescale] Body not scaled " + body.name);
+                        Debug.LogError("[CelestialRescale] " + " [" + body.name + "] " + body.name);
                     }
                     else if (body.Radius == targetRadius)
                     {
-                        Debug.Log("[CelestialRescale] Radius Changedb" + body.Radius);
+                        Debug.Log("[CelestialRescale] " + " [" + body.name + "] " + body.Radius);
                     }
                     ResizeAtmosphere(body);
                     FixScaledSpace(body);
@@ -83,7 +83,7 @@ namespace Celestial_Rescale
             if (body != null && body.atmosphere == true) // Additional null check
             {
                 body.atmosphereDepth *= scaleFactor;
-                Debug.Log("[CelestialRescale] Atmosphere Depth: " + body.atmosphereDepth);
+                Debug.Log("[CelestialRescale] " + " [" + body.name + "] " + body.atmosphereDepth);
             }
         }
 
@@ -91,7 +91,8 @@ namespace Celestial_Rescale
         {
             if (body != null && body.ocean) // Additional null check
             {
-                Debug.Log("[CelestialRescale] Nothing Yet");
+                body.oceanFogPQSDepth *= scaleFactor;
+                Debug.Log("[CelestialRescale] " + " [" + body.name + "] " + body.oceanFogPQSDepth);
             }
         }
 
@@ -110,7 +111,7 @@ namespace Celestial_Rescale
                 }
                 else
                 {
-                    Debug.LogError("[CelestialRescale] No change in semi-major axis" + body.name);
+                    Debug.LogError("[CelestialRescale] " + " [" + body.name + "] " + "No change in semi-major axis" + body.name);
                 }
             }
         }
