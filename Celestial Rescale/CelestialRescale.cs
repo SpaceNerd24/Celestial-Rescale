@@ -21,7 +21,7 @@ namespace Celestial_Rescale
                 {
                     body.pqsController.ResetSphere();
 
-                    Debug.Log("[CelestialRescale] " + " [" + body.name + "] " + body.name);
+                    Debug.Log("[CelestialRescale]" + " [" + body.name + "] " + body.name);
 
                     double originalRadius = body.Radius;
                     double targetRadius = body.Radius * scaleFactor;
@@ -55,7 +55,7 @@ namespace Celestial_Rescale
 
                     if (body.name == "Kerbin" && body.isHomeWorld == true)
                     {
-                        Debug.Log("[CelestialRescale] " + " [" + body.name + "] " + " is home world");
+                        Debug.Log("[CelestialRescale]" + " [" + body.name + "] " + " is home world");
                     }
 
                     // Update the Body?
@@ -64,11 +64,11 @@ namespace Celestial_Rescale
                     // Log the new radius (If there is a new one)
                     if (body.Radius == originalRadius)
                     {
-                        Debug.LogError("[CelestialRescale] " + " [" + body.name + "] " + body.name);
+                        Debug.LogError("[CelestialRescale]" + " [" + body.name + "] " + body.name);
                     }
                     else if (body.Radius == targetRadius)
                     {
-                        Debug.Log("[CelestialRescale] " + " [" + body.name + "] " + body.Radius);
+                        Debug.Log("[CelestialRescale]" + " [" + body.name + "] " + body.Radius);
                     }
                     ResizeAtmosphere(body);
                     FixScaledSpace(body);
@@ -80,10 +80,22 @@ namespace Celestial_Rescale
 
         private void ResizeAtmosphere(CelestialBody body)
         {
+            double originalMaxAltitude = body.atmosphereDepth;
+            double newMaxAltitude = body.atmosphereDepth * scaleFactor;
+
             if (body != null && body.atmosphere == true) // Additional null check
             {
                 body.atmosphereDepth *= scaleFactor;
-                Debug.Log("[CelestialRescale] " + " [" + body.name + "] " + body.atmosphereDepth);
+                Debug.Log("[CelestialRescale]" + " [" + body.name + "] " + body.atmosphereDepth);
+                body.pqsController.RebuildSphere();
+            }
+
+            if (body.atmosphereDepth == originalMaxAltitude)
+            {
+                Debug.LogError("[CelestialRescale]" + " [" + body.name + "] " + "No change in max altitude" + body.name);
+            } else if (body.atmosphereDepth == newMaxAltitude)
+            {
+                Debug.Log("[CelestialRescale]" + " [" + body.name + "] " + body.atmosphereDepth + " max altitude fixed?");
             }
         }
 
@@ -91,8 +103,18 @@ namespace Celestial_Rescale
         {
             if (body != null && body.ocean) // Additional null check
             {
+                body.oceanFogDensityPQSMult *= scaleFactor2;
                 body.oceanFogPQSDepth *= scaleFactor;
-                Debug.Log("[CelestialRescale] " + " [" + body.name + "] " + body.oceanFogPQSDepth);
+                Debug.Log("[CelestialRescale]" + " [" + body.name + "] " + body.oceanFogPQSDepth);
+                body.pqsController.RebuildSphere();
+            }
+
+            foreach (PQSMod pqsMod in body.pqsController.GetComponentsInChildren<PQSMod>())
+            {
+                if (pqsMod != null) // Additional null check
+                {
+                    pqsMod.sphere.radius = body.Radius;
+                }
             }
         }
 
@@ -107,11 +129,11 @@ namespace Celestial_Rescale
 
                 if (body.orbit.semiMajorAxis != originalSemiMajorAxis)
                 {
-                    Debug.Log("[CelestialRescale] New semi-major axis: " + body.orbit.semiMajorAxis + " " + body.name);
+                    Debug.Log("[CelestialRescale]" + " [" + body.name + "] " + body.orbit.semiMajorAxis + " " + body.name);
                 }
                 else
                 {
-                    Debug.LogError("[CelestialRescale] " + " [" + body.name + "] " + "No change in semi-major axis" + body.name);
+                    Debug.LogError("[CelestialRescale]" + " [" + body.name + "] " + "No change in semi-major axis" + body.name);
                 }
             }
         }
