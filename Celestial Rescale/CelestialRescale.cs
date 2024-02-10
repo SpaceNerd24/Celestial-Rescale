@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using UniLinq;
-using UnityEngine;
-using static FlightCamera;
+﻿using UnityEngine;
+
 
 namespace Celestial_Rescale
 {
