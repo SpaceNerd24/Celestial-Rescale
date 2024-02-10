@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34309.116
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CelestialRescale", "Celestial Rescale\CelestialRescale.csproj", "{234850BE-8CCF-4B10-ABE7-FB8AC972E94C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{234850BE-8CCF-4B10-ABE7-FB8AC972E94C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{234850BE-8CCF-4B10-ABE7-FB8AC972E94C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{234850BE-8CCF-4B10-ABE7-FB8AC972E94C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{234850BE-8CCF-4B10-ABE7-FB8AC972E94C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F42C3E87-6E8F-49BF-8893-F19FA282980F}
+	EndGlobalSection
+EndGlobal
