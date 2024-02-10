@@ -85,17 +85,21 @@ namespace Celestial_Rescale
 
             if (body != null && body.atmosphere == true) // Additional null check
             {
+                body.atmosphereAdiabaticIndex *= scaleFactor;
+                body.atmospherePressureSeaLevel *= scaleFactor;
+                body.atmosphereTemperatureSeaLevel *= scaleFactor;
                 body.atmosphereDepth *= scaleFactor;
                 Debug.Log("[CelestialRescale]" + " [" + body.name + "] " + body.atmosphereDepth);
                 body.pqsController.RebuildSphere();
-            }
 
-            if (body.atmosphereDepth == originalMaxAltitude)
-            {
-                Debug.LogError("[CelestialRescale]" + " [" + body.name + "] " + "No change in max altitude" + body.name);
-            } else if (body.atmosphereDepth == newMaxAltitude)
-            {
-                Debug.Log("[CelestialRescale]" + " [" + body.name + "] " + body.atmosphereDepth + " max altitude fixed?");
+                if (body.atmosphereDepth == originalMaxAltitude)
+                {
+                    Debug.LogError("[CelestialRescale]" + " [" + body.name + "] " + "No change in max altitude" + body.name);
+                }
+                else if (body.atmosphereDepth == newMaxAltitude)
+                {
+                    Debug.Log("[CelestialRescale]" + " [" + body.name + "] " + body.atmosphereDepth + " max altitude fixed?");
+                }
             }
         }
 
@@ -111,7 +115,7 @@ namespace Celestial_Rescale
 
             foreach (PQSMod pqsMod in body.pqsController.GetComponentsInChildren<PQSMod>())
             {
-                if (pqsMod != null) // Additional null check
+                if (pqsMod != null && body != null && body.ocean == true && body.pqsController != null && pqsMod.sphere.radius != null) // Additional null check
                 {
                     pqsMod.sphere.radius = body.Radius;
                 }
