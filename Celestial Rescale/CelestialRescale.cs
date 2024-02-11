@@ -1,7 +1,5 @@
-﻿using Smooth.Algebraics;
+﻿using KSP.UI.Screens.Flight;
 using UnityEngine;
-using UnityEngine.Assertions.Must;
-
 
 namespace Celestial_Rescale
 {
@@ -99,6 +97,41 @@ namespace Celestial_Rescale
                     Debug.Log("[CelestialRescale]" + " [" + body.name + "] " + body.atmosphereDepth + " max altitude fixed?");
                 }
             }
+
+            if (body != null && body.atmosphere)
+            {
+                foreach (LinearAtmosphereGauge atmosphereGauge in body.GetComponents<LinearAtmosphereGauge>())
+                {
+                    atmosphereGauge.gauge.maxValue *= scaleFactor2;
+                    Debug.Log("[CelestialRescale]" + " [" + body.name + "] " + "Atmo Guage thingy found");
+                }
+
+
+                if (body.afg != null)
+                {
+                    //body.afg.g *= scaleFactor2;
+                    //body.afg.innerRadius *= scaleFactor2;
+                    //body.afg.innerRadius2 *= scaleFactor2;
+                    body.afg.outerRadius *= scaleFactor2;
+                    body.afg.outerRadius2 *= scaleFactor2;
+                    //body.afg.Km = scaleFactor2;
+                    Debug.Log("[CelestialRescale]" + " [" + body.name + "] " + "AFG node found");
+                    body.afg.UpdateAtmosphere(body);
+                }
+                else
+                {
+                    Debug.LogError("[CelestialRescale]" + " [" + body.name + "] " + "No AFG node found");
+                }
+
+                FloatCurve curve = body.atmospherePressureCurve;
+                body.atmospherePressureCurve = curve;
+                body.maxAxialDot *= scaleFactor;
+
+                // testing stuff
+
+                body.CBUpdate();
+                body.pqsController.RebuildSphere();
+            }
         }
 
         private void ResizeOceans(CelestialBody body)
@@ -124,8 +157,9 @@ namespace Celestial_Rescale
                     }
                 }
             }
-            
 
+            // Old experimentation that did nothing but make me confused
+            /*
             foreach (PQSCity pqsCity in body.pqsController.GetComponentsInChildren<PQSCity>())
             {
                 if (pqsCity != null && body != null && body.pqsController != null) // Additional null check
@@ -145,6 +179,7 @@ namespace Celestial_Rescale
                     //pqsCity.Orientate();
                 }
             }
+            */
         }
 
         private void ResizeOrbits(CelestialBody body)
