@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using Smooth.Algebraics;
+using UnityEngine;
+using UnityEngine.Assertions.Must;
 
 
 namespace Celestial_Rescale
@@ -109,11 +111,38 @@ namespace Celestial_Rescale
                 body.pqsController.RebuildSphere();
             }
 
+            
             foreach (PQSMod pqsMod in body.pqsController.GetComponentsInChildren<PQSMod>())
             {
-                if (pqsMod != null && body != null && body.ocean == true && body.pqsController != null && pqsMod.sphere.radius != null) // Additional null check
+                if (pqsMod != null && body != null && body.pqsController != null && pqsMod.sphere != null) // Additional null check
                 {
-                    pqsMod.sphere.radius = body.Radius;
+                    pqsMod.RebuildSphere();
+
+                    if (pqsMod.sphere != null && pqsMod.sphere.radius != body.pqsController.radius)
+                    {
+                        pqsMod.sphere.radius = body.pqsController.radius;
+                    }
+                }
+            }
+            
+
+            foreach (PQSCity pqsCity in body.pqsController.GetComponentsInChildren<PQSCity>())
+            {
+                if (pqsCity != null && body != null && body.pqsController != null) // Additional null check
+                {
+                    pqsCity.sphere.radius = body.Radius;
+                    pqsCity.sphere.RebuildSphere();
+                    //pqsCity.Orientate();
+                }
+            }
+
+            foreach (PQSCity2 pqsCity2 in body.pqsController.GetComponentsInChildren<PQSCity2>())
+            {
+                if (pqsCity2 != null && body != null && body.pqsController != null) // Additional null check
+                {
+                    pqsCity2.sphere.radius = body.Radius;
+                    pqsCity2.sphere.RebuildSphere();
+                    //pqsCity.Orientate();
                 }
             }
         }
@@ -129,7 +158,7 @@ namespace Celestial_Rescale
 
                 if (body.orbit.semiMajorAxis != originalSemiMajorAxis)
                 {
-                    Debug.Log("[CelestialRescale]" + " [" + body.name + "] " + body.orbit.semiMajorAxis + " " + body.name);
+                    Debug.Log("[CelestialRescale]" + " [" + body.name + "] " + body.orbit.semiMajorAxis + " " + body.name + "semi-major axis");
                 }
                 else
                 {
