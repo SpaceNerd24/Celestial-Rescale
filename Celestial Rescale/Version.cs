@@ -5,7 +5,7 @@ namespace Celestial_Rescale
     [KSPAddon(KSPAddon.Startup.Instantly, true)]
     public class Version : MonoBehaviour
     {
-        public static readonly System.Version verson = new System.Version("0.2.0");
+        public static readonly System.Version version = new System.Version("0.2.0");
 
         public void Awake()
         {
