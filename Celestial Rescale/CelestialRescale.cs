@@ -159,7 +159,7 @@ namespace Celestial_Rescale
             }
 
             // Old experimentation that did nothing but make me confused
-            /*
+
             foreach (PQSCity pqsCity in body.pqsController.GetComponentsInChildren<PQSCity>())
             {
                 if (pqsCity != null && body != null && body.pqsController != null) // Additional null check
@@ -179,7 +179,6 @@ namespace Celestial_Rescale
                     //pqsCity.Orientate();
                 }
             }
-            */
         }
 
         private void ResizeOrbits(CelestialBody body)
@@ -230,17 +229,27 @@ namespace Celestial_Rescale
                 PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f),
                     new Vector2(0.5f, 0.5f),
                     new MultiOptionDialog("",
-                        "v0.2.0",
+                        "v0.1.4",
                         "Celestial Rescale",
                         HighLogic.UISkin,
-                         new Rect(0.5f, 0.5f, 150f, 60f),
+                        new Rect(0.5f, 0.5f, 150f, 60f),
                         new DialogGUIFlexibleSpace(),
                         new DialogGUIVerticalLayout(new DialogGUIFlexibleSpace(),
-                            new DialogGUIButton("Rescale Planets",
+                            new DialogGUIButton("Rescale Planets (Warning: will break your game)",
                                 delegate
                                 {
                                     Debug.Log("[CelestialRescale]" + " Rescaling planets through user input");
                                     Start();
+                                }, 140.0f, 30.0f, false),
+                            new DialogGUIButton("Change Scalefactor1",
+                                delegate
+                                {
+                                    Debug.Log("[CelestialRescale]" + " Changing scalefactor1 through user input");
+                                }, 140.0f, 30.0f, false),
+                            new DialogGUIButton("Change Scalefactor2",
+                                delegate
+                                {
+                                    Debug.Log("[CelestialRescale]" + " Changing scalefactor2 through user input");
                                 }, 140.0f, 30.0f, false),
                             new DialogGUIButton("Close",
                                 delegate
