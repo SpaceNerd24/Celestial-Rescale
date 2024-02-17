@@ -222,5 +222,35 @@ namespace Celestial_Rescale
                 body.scaledBody.transform.localScale *= scaleFactor2;
             }
         }
+        public void Update()
+        {
+            bool isToggling = GameSettings.MODIFIER_KEY.GetKey() && Input.GetKeyDown(KeyCode.C) && HighLogic.LoadedScene == GameScenes.MAINMENU;
+            if (isToggling)
+            {
+                PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f),
+                    new Vector2(0.5f, 0.5f),
+                    new MultiOptionDialog("",
+                        "v0.2.0",
+                        "Celestial Rescale",
+                        HighLogic.UISkin,
+                         new Rect(0.5f, 0.5f, 150f, 60f),
+                        new DialogGUIFlexibleSpace(),
+                        new DialogGUIVerticalLayout(new DialogGUIFlexibleSpace(),
+                            new DialogGUIButton("Rescale Planets",
+                                delegate
+                                {
+                                    Debug.Log("[CelestialRescale]" + " Rescaling planets through user input");
+                                    Start();
+                                }, 140.0f, 30.0f, false),
+                            new DialogGUIButton("Close",
+                                delegate
+                                {
+                                    Debug.Log("[CelestialRescale]" + " Closing Ui");
+                                }, 140.0f, 30.0f, true)
+                            )),
+                    false,
+                    HighLogic.UISkin); ;
+            }
+        }
     }
 }
