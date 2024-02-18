@@ -1,16 +1,61 @@
 ﻿using KSP.UI.Screens.Flight;
+using System.Collections.Generic;
 using UnityEngine;
+using System.IO;
 
 namespace Celestial_Rescale
 {
     [KSPAddon(KSPAddon.Startup.MainMenu, true)]
     internal class CelestialRescale : MonoBehaviour
     {
-        double scaleFactor = 2;
-        float scaleFactor2 = 2;
+
+        public double scaleFactor = 2;
+        public float scaleFactor2 = 2;
+
+        public void ConfigLoader()
+        {
+            string filePath = "GameData/CelestialRescale/CelestialRescaleLocalSettings.cfg";
+
+            Debug.Log("Loading settings from " + filePath);
+
+            Dictionary<string, string> config = new Dictionary<string, string>();
+
+            string[] lines = File.ReadAllLines(filePath);
+
+            foreach (string line in lines)
+            {
+                string[] parts = line.Split('=');
+
+                if (parts.Length == 2)
+                {
+                    string key = parts[0].Trim();
+                    string value = parts[1].Trim();
+                    if (key == "scaleFactor" && value != null)
+                    {
+                        Debug.Log("scaleFactor: " + value + " " + scaleFactor);
+                        scaleFactor = float.Parse(value);
+                    }
+                    else if (key == "scaleFactor2" && value != null)
+                    {
+                        Debug.Log("scaleFactor2 : " + value + " " + scaleFactor2);
+                        scaleFactor2 = float.Parse(value);
+                    }
+                    else if (value != null)
+                    {
+                        Debug.Log("Unknown key: " + key + " " + value);
+                    }
+                    else
+                    {
+                        Debug.Log("why did this break? " + key + " " + value);
+                    }
+                }
+            }
+        }
 
         public void Start()
         {
+            ConfigLoader();
+
             foreach (CelestialBody body in FlightGlobals.Bodies)
             {
                 if (body != null && body.pqsController != null)
@@ -240,16 +285,6 @@ namespace Celestial_Rescale
                                 {
                                     Debug.Log("[CelestialRescale]" + " Rescaling planets through user input");
                                     Start();
-                                }, 140.0f, 30.0f, false),
-                            new DialogGUIButton("Change Scalefactor1",
-                                delegate
-                                {
-                                    Debug.Log("[CelestialRescale]" + " Changing scalefactor1 through user input");
-                                }, 140.0f, 30.0f, false),
-                            new DialogGUIButton("Change Scalefactor2",
-                                delegate
-                                {
-                                    Debug.Log("[CelestialRescale]" + " Changing scalefactor2 through user input");
                                 }, 140.0f, 30.0f, false),
                             new DialogGUIButton("Close",
                                 delegate
