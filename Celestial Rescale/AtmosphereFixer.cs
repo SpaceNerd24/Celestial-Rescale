@@ -68,45 +68,6 @@ namespace Celestial_Rescale
             }
         }
 
-        void Multiply(FloatCurve curve, double multiplier)
-        {
-            List<double[]> list = new List<double[]>();
-            list = ReadCurve(curve);
-            foreach (double[] key in list)
-            {
-                key[0] *= multiplier;
-                key[2] /= multiplier;
-                key[3] /= multiplier;
-            }
-            curve.Load(WriteCurve(list));
-        }
-
-        List<double[]> ReadCurve(FloatCurve curve)
-        {
-            ConfigNode config = new ConfigNode();
-            List<double[]> list = new List<double[]>();
-
-            curve.Save(config);
-
-            foreach (string k in config.GetValues("key"))
-            {
-                string[] valueStrings = k.Split(',');
-                double[] values = new double[valueStrings.Length];
-
-                for (int i = 0; i < valueStrings.Length; i++)
-                {
-                    if (double.TryParse(valueStrings[i], out double parsedValue))
-                    {
-                        values[i] = parsedValue;
-                    }
-                }
-
-                list.Add(values);
-            }
-
-            return list;
-        }
-
         ConfigNode WriteCurve(List<double[]> list)
         {
             ConfigNode config = new ConfigNode();
