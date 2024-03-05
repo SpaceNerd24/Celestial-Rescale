@@ -55,6 +55,10 @@ namespace Celestial_Rescale
         public void Start()
         {
             ConfigLoader();
+            PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), "Celestial Rescale",
+            "Celestial Rescale v0.3.0",
+            "Starting the Config Loader", "IDK", true, HighLogic.UISkin,
+            true, string.Empty);
 
             foreach (CelestialBody body in FlightGlobals.Bodies)
             {
@@ -88,13 +92,14 @@ namespace Celestial_Rescale
 
                     foreach (PQSMod pqsMod in body.pqsController.GetComponentsInChildren<PQSMod>())
                     {
-                        if (pqsMod != null) // Additional null check
+                        if (pqsMod != null && pqsMod.sphere != null) // Additional null check
                         {
+                            pqsMod.sphere.radius = body.pqsController.radius;
                             pqsMod.RebuildSphere();
                         }
                     }
 
-                    if (body.name == "Kerbin" && body.isHomeWorld == true)
+                    if (body.isHomeWorld == true)
                     {
                         Debug.Log("[CelestialRescale]" + " [" + body.name + "] " + " is home world");
                     }
@@ -126,9 +131,6 @@ namespace Celestial_Rescale
 
             if (body != null && body.atmosphere == true) // Additional null check
             {
-                body.atmosphereAdiabaticIndex *= scaleFactor;
-                body.atmospherePressureSeaLevel *= scaleFactor;
-                body.atmosphereTemperatureSeaLevel *= scaleFactor;
                 body.atmosphereDepth *= scaleFactor;
                 Debug.Log("[CelestialRescale]" + " [" + body.name + "] " + body.atmosphereDepth);
                 body.pqsController.RebuildSphere();
@@ -145,13 +147,6 @@ namespace Celestial_Rescale
 
             if (body != null && body.atmosphere)
             {
-                foreach (LinearAtmosphereGauge atmosphereGauge in body.GetComponents<LinearAtmosphereGauge>())
-                {
-                    atmosphereGauge.gauge.maxValue *= scaleFactor2;
-                    Debug.Log("[CelestialRescale]" + " [" + body.name + "] " + "Atmo Guage thingy found");
-                }
-
-
                 if (body.afg != null)
                 {
                     //body.afg.g *= scaleFactor2;
@@ -160,6 +155,7 @@ namespace Celestial_Rescale
                     body.afg.outerRadius *= scaleFactor2;
                     body.afg.outerRadius2 *= scaleFactor2;
                     //body.afg.Km = scaleFactor2;
+                    //body.afg.scale = scaleFactor2;
                     Debug.Log("[CelestialRescale]" + " [" + body.name + "] " + "AFG node found");
                     body.afg.UpdateAtmosphere(body);
                 }
@@ -167,10 +163,6 @@ namespace Celestial_Rescale
                 {
                     Debug.LogError("[CelestialRescale]" + " [" + body.name + "] " + "No AFG node found");
                 }
-
-                FloatCurve curve = body.atmospherePressureCurve;
-                body.atmospherePressureCurve = curve;
-                body.maxAxialDot *= scaleFactor;
 
                 // testing stuff
 
@@ -199,6 +191,7 @@ namespace Celestial_Rescale
                     if (pqsMod.sphere != null && pqsMod.sphere.radius != body.pqsController.radius)
                     {
                         pqsMod.sphere.radius = body.pqsController.radius;
+                        Debug.Log("[CelestialRescale]" + " [" + body.name + "] " + pqsMod.sphere.radius + " pqs sphere radius");
                     }
                 }
             }
