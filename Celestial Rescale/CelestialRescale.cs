@@ -51,8 +51,8 @@ namespace Celestial_Rescale
 
         public void Start()
         {
-            AtmosphereStart();
             ConfigLoader();
+            AtmosphereStart();
             //this is dumb
             /*
             PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), "Celestial Rescale",
@@ -63,7 +63,7 @@ namespace Celestial_Rescale
 
             foreach (CelestialBody body in FlightGlobals.Bodies)
             {
-                if (body != null && body.pqsController != null)
+                if (body != null && body.pqsController != null && scaleFactor <= 100)
                 {
                     body.pqsController.ResetSphere();
 
@@ -103,6 +103,26 @@ namespace Celestial_Rescale
                     if (body.isHomeWorld == true)
                     {
                         Debug.Log("[CelestialRescale]" + " [" + body.name + "] " + " is home world");
+
+                        foreach (PQSCity pqsCity in body.pqsController.GetComponentsInChildren<PQSCity>())
+                        {
+                            if (pqsCity != null && body != null && body.pqsController != null) // Additional null check
+                            {
+                                pqsCity.sphere.radius = body.Radius;
+                                pqsCity.sphere.RebuildSphere();
+                                pqsCity.Orientate();
+                            }
+                        }
+
+                        foreach (PQSCity2 pqsCity2 in body.pqsController.GetComponentsInChildren<PQSCity2>())
+                        {
+                            if (pqsCity2 != null && body != null && body.pqsController != null) // Additional null check
+                            {
+                                pqsCity2.sphere.radius = body.Radius;
+                                pqsCity2.sphere.RebuildSphere();
+                                pqsCity2.Orientate();
+                            }
+                        }
                     }
 
                     // Update the Body?
@@ -196,28 +216,6 @@ namespace Celestial_Rescale
                     }
                 }
             }
-
-            // Old experimentation that did nothing but make me confused
-
-            foreach (PQSCity pqsCity in body.pqsController.GetComponentsInChildren<PQSCity>())
-            {
-                if (pqsCity != null && body != null && body.pqsController != null) // Additional null check
-                {
-                    pqsCity.sphere.radius = body.Radius;
-                    pqsCity.sphere.RebuildSphere();
-                    //pqsCity.Orientate();
-                }
-            }
-
-            foreach (PQSCity2 pqsCity2 in body.pqsController.GetComponentsInChildren<PQSCity2>())
-            {
-                if (pqsCity2 != null && body != null && body.pqsController != null) // Additional null check
-                {
-                    pqsCity2.sphere.radius = body.Radius;
-                    pqsCity2.sphere.RebuildSphere();
-                    //pqsCity.Orientate();
-                }
-            }
         }
 
         private void ResizeOrbits(CelestialBody body)
@@ -268,7 +266,7 @@ namespace Celestial_Rescale
                 PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f),
                     new Vector2(0.5f, 0.5f),
                     new MultiOptionDialog("",
-                        "v0.1.4",
+                        "Version v0.3.0",
                         "Celestial Rescale",
                         HighLogic.UISkin,
                         new Rect(0.5f, 0.5f, 150f, 60f),
@@ -279,6 +277,12 @@ namespace Celestial_Rescale
                                 {
                                     Debug.Log("[CelestialRescale]" + " Rescaling planets through user input");
                                     Start();
+                                }, 140.0f, 30.0f, false),
+                            new DialogGUIButton("Reload Configs",
+                                delegate
+                                {
+                                    Debug.Log("[CelestialRescale]" + " Reloading Config");
+                                    ConfigLoader();
                                 }, 140.0f, 30.0f, false),
                             new DialogGUIButton("Close",
                                 delegate
