@@ -298,6 +298,7 @@ namespace Celestial_Rescale
             {
                 if (body != null && body.atmosphere && isDoingAtmospheres == true && usingBrokenWay == true)
                 {
+                    Debug.Log("Using Broken Mode");
                     PrintCurve(body, "First Curves");
 
                     CurveModifierSetup(body, "Debuging");
@@ -306,6 +307,7 @@ namespace Celestial_Rescale
                 }
                 if (body != null && body.atmosphere && isDoingAtmospheres == true)
                 {
+                    Debug.Log("Using Slightly Less Broken");
                     body.atmospherePressureCurveIsNormalized = true;
                     Debug.Log("New stuff " + body.atmospherePressureCurveIsNormalized + " Name: " + body.displayName);
                 }
