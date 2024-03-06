@@ -10,8 +10,9 @@ namespace Celestial_Rescale
     {
         float scaleFactor2 = 1;
         double scaleFactor = 1;
-        readonly bool isDoingAtmospheres = false;
-        readonly bool usingBrokenWay = false;
+
+        readonly bool isDoingAtmospheres = true; // make this true during release and most times if it works
+        readonly bool usingBrokenWay = false; // make this false unless testing or it suddenly works
 
         public void ConfigLoader()
         {

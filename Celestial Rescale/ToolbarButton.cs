@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 
-
 namespace Celestial_Rescale
 {
     [KSPAddon(KSPAddon.Startup.Instantly, true)]
