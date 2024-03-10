@@ -1,7 +1,9 @@
-﻿using KSP.UI.Screens.Flight;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
+using System.Linq;
+using System.Reflection;
+using System;
 
 namespace Celestial_Rescale
 {
@@ -11,8 +13,8 @@ namespace Celestial_Rescale
         float scaleFactor2 = 1;
         double scaleFactor = 1;
 
-        readonly bool isDoingAtmospheres = true; // make this true during release and most times if it works
-        readonly bool usingBrokenWay = false; // make this false unless testing or it suddenly works
+        public static bool isDoingAtmospheres = true; // make this true during release and most times if it works
+        public static bool usingBrokenWay = true; // make this false unless testing or it suddenly works
 
         public void ConfigLoader()
         {
@@ -64,6 +66,41 @@ namespace Celestial_Rescale
 
             foreach (CelestialBody body in FlightGlobals.Bodies)
             {
+                if (body != null && body.isStar == true)
+                {
+                    body.Mass *= scaleFactor;
+                    body.Radius *= scaleFactor;
+                    ResizeOrbits(body);
+                    FixScaledSpace(body);
+                }
+
+                if (body != null && scaleFactor <= 100 && body.isStar)
+                {
+
+                    Debug.Log("[CelestialRescale]" + " [" + body.name + "] " + body.name);
+
+                    double originalRadius = body.Radius;
+                    double targetRadius = body.Radius * scaleFactor;
+
+                    // Adjust other properties pt 1
+
+                    body.Radius *= scaleFactor;
+                    body.Mass *= scaleFactor;
+
+                    // Log the new radius (If there is a new one)
+                    if (body.Radius == originalRadius)
+                    {
+                        Debug.LogError("[CelestialRescale]" + " [" + body.name + "] " + body.name);
+                    }
+                    else if (body.Radius == targetRadius)
+                    {
+                        Debug.Log("[CelestialRescale]" + " [" + body.name + "] " + body.Radius);
+                    }
+                    ResizeAtmosphere(body);
+                    FixScaledSpace(body);
+                    ResizeOrbits(body);
+                }
+
                 if (body != null && body.pqsController != null && scaleFactor <= 100)
                 {
                     body.pqsController.ResetSphere();
@@ -155,7 +192,7 @@ namespace Celestial_Rescale
             {
                 body.atmosphereDepth *= scaleFactor;
                 Debug.Log("[CelestialRescale]" + " [" + body.name + "] " + body.atmosphereDepth);
-                body.pqsController.RebuildSphere();
+                //body.pqsController.RebuildSphere();
 
                 if (body.atmosphereDepth == originalMaxAltitude)
                 {
@@ -169,7 +206,7 @@ namespace Celestial_Rescale
 
             if (body != null && body.atmosphere)
             {
-                if (body.afg != null)
+                if (body.afg != null && body.isStar == false)
                 {
                     //body.afg.g *= scaleFactor2;
                     //body.afg.innerRadius *= scaleFactor2;
@@ -185,11 +222,6 @@ namespace Celestial_Rescale
                 {
                     Debug.LogError("[CelestialRescale]" + " [" + body.name + "] " + "No AFG node found");
                 }
-
-                // testing stuff
-
-                body.CBUpdate();
-                body.pqsController.RebuildSphere();
             }
         }
 
@@ -306,7 +338,17 @@ namespace Celestial_Rescale
                     Debug.Log("Using Broken Mode");
                     PrintCurve(body, "First Curves");
 
-                    CurveModifierSetup(body, "Debuging");
+                    /*
+                    // please work EDIT: nevermind its broken
+                    FloatCurve scaledpresurecurve = ScaleCurve(body.atmospherePressureCurve, body);
+                    body.atmospherePressureCurve = scaledpresurecurve;
+                    */
+
+                    ExtendAtmo1(body.atmospherePressureCurve);
+                    ExtendAtmo1(body.atmosphereTemperatureCurve);
+
+                    ExtendAtmo2(body.atmospherePressureCurve, body);
+                    ExtendAtmo2(body.atmosphereTemperatureCurve, body);
 
                     PrintCurve(body, "Final Curves");
                 }
@@ -317,6 +359,101 @@ namespace Celestial_Rescale
                     Debug.Log("New stuff " + body.atmospherePressureCurveIsNormalized + " Name: " + body.displayName);
                 }
             }
+        }
+
+        public void ExtendAtmo1(FloatCurve curve)
+        {
+            List<double[]> list = new List<double[]>();
+            list = ReadCurve(curve);
+            foreach (double[] key in list)
+            {
+                key[0] *= scaleFactor;
+                key[2] /= scaleFactor;
+                key[3] /= scaleFactor;
+            }
+            curve.Load(WriteCurve(list));
+        }
+
+
+        FloatCurve ScaleCurve(FloatCurve originalcurve, CelestialBody body)
+        {
+            Debug.Log("originalcurve: " + originalcurve + " Name: " + body.name);
+            FloatCurve newcurve = originalcurve;
+            ConfigNode config = new ConfigNode();
+            newcurve.Save(config);
+
+            string[] array = config.GetValues("key");
+            for (int i = 0; i < array.Length; i++)
+            {
+                string key = array[i];
+                Debug.Log("CelestialRescale.ScaleCurve - original key = " + key + " Name: " + body.name);
+
+                double doublekey;
+                if (double.TryParse(key, out doublekey))
+                {
+                    doublekey *= scaleFactor;
+                    key = doublekey.ToString();
+                    Debug.Log("CelestialRescale.ScaleCurve - final key = " + key + " Name: " + body.name);
+                }
+                else
+                {
+                    Debug.LogError("CelestialRescale.ScaleCurve - Invalid key: " + key + " Body: " + body.name);
+                }
+            }
+
+            return newcurve;
+        }
+
+        void ExtendAtmo2(FloatCurve curve, CelestialBody body)
+        {
+            double atmotop = body.atmosphereDepth;
+            List<double[]> list = new List<double[]>();
+            list = ReadCurve(curve);
+
+            double newAltitude = list.Last()[0];
+            double dX = list.Last()[0] - list[list.Count - 2][0];
+            double[] K = getK(list);
+
+            for (int i = 0; newAltitude < atmotop; i++)
+            {
+                newAltitude += dX;
+                double newPressure = getY(newAltitude, list.Last(), K);
+                double tangent = (newPressure - getY(newAltitude - dX * 0.01, list.Last(), K)) / (dX * 0.01);
+
+                double[] newKey = { newAltitude, newPressure, tangent, tangent };
+
+                if (newKey[1] < 0)
+                {
+                    if (list.Last()[1] == 0)
+                        break;
+                    else
+                        newKey[1] = 0;
+                }
+
+                list.Add(newKey);
+            }
+
+            // Debug
+            PrintCurve(list, "Extend");
+        }
+
+
+        List<double[]> ReadCurve(FloatCurve curve)
+        {
+            ConfigNode config = new ConfigNode();
+            List<double[]> list = new List<double[]>();
+            ParserBS<double> value = new ParserBS<double>();
+            
+
+            curve.Save(config);
+
+            foreach (string k in config.GetValues("key"))
+            {
+                value.SetFromString(k);
+                list.Add(value.Value.ToArray());
+            }
+
+            return list;
         }
 
         ConfigNode WriteCurve(List<double[]> list)
@@ -371,51 +508,69 @@ namespace Celestial_Rescale
             }
         }
 
-        void CurveModifierSetup(CelestialBody body, string name)
+        enum Ktype
         {
-            Debug.Log("Doing Curve Stuff " + name + " for body " + body.name);
-            FloatCurve newPressureCurve = MultiplyKeysAndCreateNewCurve(body.atmospherePressureCurve, "pressureCurve");
-            FloatCurve newTempCurve = MultiplyKeysAndCreateNewCurve(body.atmosphereTemperatureCurve, "temperatureCurve");
-            FloatCurve newSunCurve = MultiplyKeysAndCreateNewCurve(body.atmosphereTemperatureSunMultCurve, "temperatureSunMultCurve");
+            Exponential,
+            Logarithmic,
+            Polynomial
+        }
+        Ktype curve = Ktype.Exponential;
 
-            body.atmospherePressureCurve = newPressureCurve;
-            body.atmosphereTemperatureCurve = newTempCurve;
-            body.atmosphereTemperatureSunMultCurve = newSunCurve;
-            Debug.Log("curve1");
+        double[] getK(List<double[]> list)
+        {
+            double[] K = { };
+            if (list.Count == 2)
+            {
+                // Polynomial Curve:    dY = dX * ( K0 * (X0 + X1) + K1 )
+                K = new double[] { 0, (list[1][1] - list[0][1]) / (list[1][0] - list[0][0]) };
+                curve = Ktype.Polynomial;
+                return K;
+            }
+            double[] dY = { list[list.Count - 2][1] - list[list.Count - 3][1], list[list.Count - 1][1] - list[list.Count - 2][1] };
+            double[] dX = { list[list.Count - 2][0] - list[list.Count - 3][0], list[list.Count - 1][0] - list[list.Count - 2][0] };
+            double curvature = (dY[1] / dX[1] - dY[0] / dX[0]) / ((dX[0] + dX[1]) / 2);
+
+            if (curvature > 0)
+            {
+                // Exponential Curve:   Y1/Y0 = EXP(dX * K);
+                K = new double[] { Math.Log(list.Last()[1] / list[list.Count - 2][1]) / dX[1] };
+                curve = Ktype.Exponential;
+            }
+            else if (curvature < 0 && dY[1] >= 0)
+            {
+                // Logarithmic Curve:   dY = K * LN(X1/X0);
+                K = new double[] { dY[1] / Math.Log(list.Last()[0] / list[list.Count - 2][0]) };
+                curve = Ktype.Logarithmic;
+            }
+            else
+            {
+                // Polynomial Curve:    dY = dX * ( K0 * (X0 + X1) + K1 )
+                K = new double[] { curvature / 2, dY[1] / dX[1] - (list.Last()[0] + list[list.Count - 2][0]) * curvature / 2 };
+                curve = Ktype.Polynomial;
+            }
+
+            return K;
         }
 
-        FloatCurve MultiplyKeysAndCreateNewCurve(FloatCurve curve, string name)
+        double getY(double X, double[] prevKey, double[] K)
         {
-            // Save the curve to a blank ConfigNode
-            ConfigNode config = new ConfigNode();
-            curve.Save(config);
+            double dX = X - prevKey[0];
 
-            // Create a new FloatCurve to store the modified values
-            FloatCurve newCurve = new FloatCurve();
-
-            // Extract all the keys from the ConfigNode
-            foreach (string key in config.GetValues("key"))
+            if (curve == Ktype.Exponential)
             {
-                string[] keyParts = key.Split(',');
-                if (float.TryParse(keyParts[0], out float keyValue))
-                {
-                    // Scale the keys
-                    float multipliedValue = keyValue * scaleFactor2;
-
-                    // Generate a new curve with the scaled keys
-                    newCurve.Add(multipliedValue, float.Parse(keyParts[1]), float.Parse(keyParts[2]), float.Parse(keyParts[3]));
-                }
+                // Exponential Curve:   Y1/Y0 = EXP(dX * K);
+                return prevKey[1] * Math.Exp(dX * K[0]);
             }
-
-            // Log the modified keys
-            Debug.Log("CelestialRescale.AtmosphereFixer " + name + " - Modified Keys:");
-            foreach (string key in config.GetValues("key"))
+            else if (curve == Ktype.Logarithmic)
             {
-                Debug.Log("Key: " + key);
+                // Logarithmic Curve:   dY = K * LN(X1/X0);
+                return K[0] * Math.Log(X / prevKey[0]) + prevKey[1];
             }
-
-            // Return the new curve
-            return newCurve;
+            else
+            {
+                // Polynomial Curve:    dY = dX * ( K0 * (X0 + X1) + K1 )
+                return dX * (K[0] * (X + prevKey[0]) + K[1]) + prevKey[1];
+            }
         }
     }
 }
