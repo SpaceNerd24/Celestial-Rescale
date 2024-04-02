@@ -1,46 +1,36 @@
-﻿using System;
-using System.Collections.Generic;
-using UnityEngine;
-using System.IO;
-using System.Reflection;
+﻿using UnityEngine;
+using ToolbarControl_NS;
+using System;
 using System.Linq;
+using KSP.UI.Screens;
+using UnityEngine.UI;
+using System.Collections.Generic;
+using System.Reflection;
 
 namespace Celestial_Rescale
 {
-    internal class Utilis
+    public static class Utilis
     {
-        public void Start()
-        {
-            if (CelestialRescale.isDoingAtmospheres && CelestialRescale.usingBrokenWay == false)
-            {
-                foreach (CelestialBody body in FlightGlobals.Bodies)
-                {
-                    if (body.atmosphere && body != null)
-                    {
-                        body.atmospherePressureCurveIsNormalized = true;
-                    }
-                }
-            }
-        }
+        public static string MODID = "Celestial_Rescale";
+        public static string MODNAME = "Celestial Rescale";
     }
-    public interface ParserBS1 : ParserBS2
+
+    public interface Parser1 : Parser2
     {
         void SetFromString(string s);
     }
 
-
-    public interface ParserBS2
+    public interface Parser2
     {
         string ValueToString();
     }
 
-    public interface ParserBS3<T>
+    public interface Parser3<T>
     {
         T Value { get; set; }
     }
 
-    //I fing hate parsers
-    public class ParserBS<T> : ParserBS1, ParserBS2, ParserBS3<List<T>>
+    public class MainParser<T> : Parser1, Parser2, Parser3<List<T>>
     {
         private static readonly char[] splitChars = new char[4] { ' ', ',', ';', '\t' };
 
@@ -70,7 +60,7 @@ namespace Celestial_Rescale
             return null;
         }
 
-        public ParserBS()
+        public MainParser()
         {
             Value = new List<T>();
             Type typeFromHandle = typeof(T);
@@ -82,20 +72,20 @@ namespace Celestial_Rescale
             }
         }
 
-        public ParserBS(List<T> i)
+        public MainParser(List<T> i)
             : this()
         {
             Value = i;
         }
 
-        public static implicit operator List<T>(ParserBS<T> parser)
+        public static implicit operator List<T>(MainParser<T> parser)
         {
             return parser.Value;
         }
 
-        public static implicit operator ParserBS<T>(List<T> value)
+        public static implicit operator MainParser<T>(List<T> value)
         {
-            return new ParserBS<T>(value);
+            return new MainParser<T>(value);
         }
     }
 }
