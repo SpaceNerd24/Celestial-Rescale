@@ -12,8 +12,8 @@ namespace Celestial_Rescale
     [KSPAddon(KSPAddon.Startup.MainMenu, true)]
     internal class CelestialRescale : MonoBehaviour
     {
-        float scaleFactor2 = 1;
-        double scaleFactor = 1;
+        public float scaleFactor2 = 1;
+        public double scaleFactor = 1;
 
         public static bool isDebug = true;
         public static bool isDoingAtmospheres = true; // make this true during release and most times if it works
@@ -678,6 +678,16 @@ namespace Celestial_Rescale
             {
                 return dX * (K[0] * (X + prevKey[0]) + K[1]) + prevKey[1];
             }
+        }
+
+        public void ResetBody(CelestialBody body)
+        {
+            double scaleFactor = CR_API.GetScaleFactor();
+            float scaleFactor2 = CR_API.GetScaleFactor2();
+            CR_API.ChangeScaleFactor(1);
+            CR_API.ChangeScaleFactor2(1);
+
+
         }
     }
 }

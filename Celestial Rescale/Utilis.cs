@@ -6,6 +6,7 @@ using KSP.UI.Screens;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using System.Reflection;
+using Celestial_Rescale;
 
 namespace Celestial_Rescale
 {
@@ -88,4 +89,21 @@ namespace Celestial_Rescale
             return new MainParser<T>(value);
         }
     }
+
+    /*
+    [KSPAddon(KSPAddon.Startup.Instantly, true)]
+    public class Test : MonoBehaviour
+    {
+        public void Start()
+        {
+            double newScaleFactor = 10;
+            CR_API.ChangeScaleFactor(newScaleFactor);
+            Debug.Log("New " + newScaleFactor + " Accual: " + CR_API.GetScaleFactor());
+
+            float newScaleFactor2 = 10;
+            CR_API.ChangeScaleFactor2(newScaleFactor2);
+            Debug.Log("New "+ newScaleFactor2 + " Accual: " + CR_API.GetScaleFactor2());
+        }
+    }
+    */
 }

@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using Celestial_Rescale;
 
 namespace Celestial_Rescale
 {
