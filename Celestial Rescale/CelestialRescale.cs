@@ -2,18 +2,17 @@
 using UnityEngine;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System;
-using KSP.UI.Screens;
-using ToolbarControl_NS;
+using Celestial_Rescale.API;
+using Celestial_Rescale.Utilis;
 
 namespace Celestial_Rescale
 {
     [KSPAddon(KSPAddon.Startup.MainMenu, true)]
     internal class CelestialRescale : MonoBehaviour
     {
-        public float scaleFactor2 = 1;
-        public double scaleFactor = 1;
+        internal float scaleFactor2 = 1;
+        internal double scaleFactor = 1;
 
         public static bool isDebug = true;
         public static bool isDoingAtmospheres = true; // make this true during release and most times if it works
@@ -177,12 +176,16 @@ namespace Celestial_Rescale
                     {
                         Debug.Log("[CelestialRescale]" + " [" + body.name + "] " + body.Radius);
                     }
+                    
                     AtmosphereStart(body);
                     FixScaledSpace(body);
                     ResizeOceans(body);
                     ResizeOrbits(body);
+                    BetterTerrainRescaling(body);
                 }
             }
+
+            //CR_API.ResetPlanets();
         }
 
         /*
@@ -350,7 +353,7 @@ namespace Celestial_Rescale
             }
         }
 
-        void AtmosphereStart(CelestialBody body)
+        public void AtmosphereStart(CelestialBody body)
         {
             Debug.Log("did I break the game");
             if (body != null && body.atmosphere && isDoingAtmospheres == true && usingBrokenWay == true)
@@ -680,14 +683,23 @@ namespace Celestial_Rescale
             }
         }
 
-        public void ResetBody(CelestialBody body)
+        internal void BetterTerrainRescaling(CelestialBody body)
         {
-            double scaleFactor = CR_API.GetScaleFactor();
-            float scaleFactor2 = CR_API.GetScaleFactor2();
-            CR_API.ChangeScaleFactor(1);
-            CR_API.ChangeScaleFactor2(1);
+            if (body == null && body.pqsController != null)
+            {
+                foreach (PQSCity pqs in body.pqsController.GetComponentsInChildren<PQSCity>())
+                {
+                    pqs.repositionToSphereSurface = true;
+                    pqs.reorientToSphere = true;
 
+                    pqs.RebuildSphere();
+                }
 
+                foreach (PQSCity2 pqs in body.pqsController.GetComponentsInChildren<PQSCity2>())
+                {
+                    pqs.RebuildSphere();
+                }
+            }
         }
     }
 }
