@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using ToolbarControl_NS;
 using UnityEngine;
+using Celestial_Rescale.Utilis;
 
 namespace Celestial_Rescale
 {
@@ -11,7 +12,7 @@ namespace Celestial_Rescale
     {
         public void Start()
         {
-            ToolbarControl.RegisterMod(Utilis.MODID, Utilis.MODNAME);
+            ToolbarControl.RegisterMod(CR_Utilis.MODID, CR_Utilis.MODNAME);
         }
 
         ConfigNode WriteCurve(List<double[]> list)
@@ -71,11 +72,11 @@ namespace Celestial_Rescale
             ToolbarControl toolbarControl = gameObject.AddComponent<ToolbarControl>();
             toolbarControl.AddToAllToolbars(ToggleOn, ToggleOff,
                 ApplicationLauncher.AppScenes.FLIGHT | ApplicationLauncher.AppScenes.MAPVIEW | ApplicationLauncher.AppScenes.TRACKSTATION,
-                Utilis.MODID,
+                CR_Utilis.MODID,
                 "CelestialRescaleButton",
                 "CelestialRescale/Images/PluginData/CelestialRescaleLogo.png",
                 "CelestialRescale/Images/PluginData/CelestialRescaleLogo.png",
-                Utilis.MODNAME
+                CR_Utilis.MODNAME
             );
 
             toolbarControl.buttonActive = true;

@@ -5,6 +5,7 @@ using System.Linq;
 using System;
 using Celestial_Rescale.API;
 using Celestial_Rescale.Utilis;
+using KSP.UI.Screens;
 
 namespace Celestial_Rescale
 {
@@ -13,6 +14,8 @@ namespace Celestial_Rescale
     {
         internal float scaleFactor2 = 1;
         internal double scaleFactor = 1;
+        internal double starFactor;
+        internal float starFactor2;
 
         public static bool isDebug = true;
         public static bool isDoingAtmospheres = true; // make this true during release and most times if it works
@@ -57,25 +60,19 @@ namespace Celestial_Rescale
         public void Start()
         {
             ConfigLoader();
-            //this is dumb
-            /*
-            PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), "Celestial Rescale",
-            "Celestial Rescale v0.3.0",
-            "Starting the Config Loader", "IDK", true, HighLogic.UISkin,
-            true, string.Empty);
-            */
+            starFactor = scaleFactor / 1.75;
+            starFactor2 = (float)(scaleFactor2 / 1.75);
 
             foreach (CelestialBody body in FlightGlobals.Bodies)
             {
                 if (body != null && body.isStar == true)
                 {
-                    body.Mass *= scaleFactor;
-                    body.Radius *= scaleFactor;
+                    body.Mass *= starFactor;
+                    body.Radius *= starFactor;
                     ResizeOrbits(body);
                     FixScaledSpace(body);
                 }
-
-                if (body != null && scaleFactor <= 100 && body.isStar)
+                else if (body != null && scaleFactor <= 100 && body.pqsController == null)
                 {
 
                     Debug.Log("[CelestialRescale]" + " [" + body.name + "] " + body.name);
@@ -91,17 +88,20 @@ namespace Celestial_Rescale
                     // Log the new radius (If there is a new one)
                     if (body.Radius == originalRadius)
                     {
-                        Debug.LogError("[CelestialRescale]" + " [" + body.name + "] " + body.name);
+                        Debug.LogError("[CelestialRescale]" + " [" + body.name + "] " + body.name + " is not working");
                     }
                     else if (body.Radius == targetRadius)
                     {
-                        Debug.Log("[CelestialRescale]" + " [" + body.name + "] " + body.Radius);
+                        Debug.Log("[CelestialRescale]" + " [" + body.name + "] " + body.Radius + " new radius");
                     }
                     FixScaledSpace(body);
                     ResizeOrbits(body);
+                    if (body.atmosphere)
+                    {
+                        AtmosphereStart(body);
+                    }
                 }
-
-                if (body != null && body.pqsController != null && scaleFactor <= 100)
+                else if (body != null && body.pqsController != null && scaleFactor <= 100)
                 {
                     body.pqsController.ResetSphere();
 
@@ -182,6 +182,7 @@ namespace Celestial_Rescale
                     ResizeOceans(body);
                     ResizeOrbits(body);
                     BetterTerrainRescaling(body);
+                    
                 }
             }
 
@@ -260,7 +261,7 @@ namespace Celestial_Rescale
 
         private void ResizeOrbits(CelestialBody body)
         {
-            if (body != null && body.orbit != null && body.orbitDriver != null)
+            if (body != null && body.orbit != null && body.orbitDriver != null && !body.isStar)
             {
                 double originalSemiMajorAxis = body.orbit.semiMajorAxis;
 
@@ -269,7 +270,23 @@ namespace Celestial_Rescale
 
                 if (body.orbit.semiMajorAxis != originalSemiMajorAxis)
                 {
-                    Debug.Log("[CelestialRescale]" + " [" + body.name + "] " + body.orbit.semiMajorAxis + " " + body.name + "semi-major axis");
+                    Debug.Log("[CelestialRescale]" + " [" + body.name + "] " + body.orbit.semiMajorAxis + " " + body.name + " new semi-major axis");
+                }
+                else
+                {
+                    Debug.LogError("[CelestialRescale]" + " [" + body.name + "] " + "No change in semi-major axis" + body.name);
+                }
+            }
+            if (body != null && body.orbit != null && body.orbitDriver != null && body.isStar)
+            {
+                double originalSemiMajorAxis = body.orbit.semiMajorAxis;
+
+                body.orbit.semiMajorAxis *= starFactor;
+                body.orbit.UpdateFromUT(Planetarium.GetUniversalTime());
+
+                if (body.orbit.semiMajorAxis != originalSemiMajorAxis)
+                {
+                    Debug.Log("[CelestialRescale]" + " [" + body.name + "] " + body.orbit.semiMajorAxis + " " + body.name + " new semi-major axis");
                 }
                 else
                 {
@@ -296,6 +313,23 @@ namespace Celestial_Rescale
                 }
 
                 body.scaledBody.transform.localScale *= scaleFactor2;
+            }
+            if (body != null && body.scaledBody != null && body.isStar) // Additional null check
+            {
+                ScaledSpaceFader[] faders = Resources.FindObjectsOfTypeAll<ScaledSpaceFader>();
+
+                foreach (ScaledSpaceFader fader in faders)
+                {
+                    if (fader != null && fader.celestialBody == body) // Additional null check
+                    {
+                        // Modify the properties of the fader as needed
+                        fader.fadeStart *= starFactor2;
+                        fader.fadeEnd *= starFactor2;
+                        break;
+                    }
+                }
+
+                body.scaledBody.transform.localScale *= starFactor2;
             }
         }
         public void Update()
@@ -360,10 +394,13 @@ namespace Celestial_Rescale
             {
                 double topLayer = body.atmosphereDepth * scaleFactor;
                 Debug.Log("Using Broken Mode");
-                PrintCurve(body, "First Curves");
+                //PrintCurve(body, "First Curves");
 
-                body.afg.outerRadius *= scaleFactor2;
-                body.afg.UpdateAtmosphere(body);
+                if (body.afg != null)
+                {
+                    body.afg.outerRadius *= scaleFactor2;
+                    body.afg.UpdateAtmosphere(body);
+                }
 
                 Normalize(body, body.atmosphereDepth);
 
@@ -377,7 +414,7 @@ namespace Celestial_Rescale
 
                 Normalize(body, 1 / body.atmosphereDepth);
 
-                PrintCurve(body, "Final Curves");
+                //PrintCurve(body, "Final Curves");
             }
             if (body != null && body.atmosphere && isDoingAtmospheres == true && usingBrokenWay == false)
             {
@@ -456,9 +493,6 @@ namespace Celestial_Rescale
 
             list.Last()[2] = 0;
             list.Last()[3] = 0;
-
-            // Debug
-            PrintCurve(list, "Smooth");
         }
 
         public void Normalize(CelestialBody body, double altitude)
@@ -508,9 +542,6 @@ namespace Celestial_Rescale
                     list.RemoveAt(i - 1);
                 }
             }
-
-            // Debug
-            PrintCurve(list, "Trim");
         }
 
         void Extend(List<double[]> list, double topLayer)
@@ -537,9 +568,6 @@ namespace Celestial_Rescale
 
                 list.Add(newKey);
             }
-
-            // Debug
-            PrintCurve(list, "Extend");
         }
 
 
@@ -683,6 +711,8 @@ namespace Celestial_Rescale
             }
         }
 
+        // not that much better than my current system
+        
         internal void BetterTerrainRescaling(CelestialBody body)
         {
             if (body == null && body.pqsController != null)
@@ -691,15 +721,26 @@ namespace Celestial_Rescale
                 {
                     pqs.repositionToSphereSurface = true;
                     pqs.reorientToSphere = true;
+                    if (pqs.sphere != null)
+                    {
+                        pqs.sphere.radius *= scaleFactor;
+                        pqs.sphere.RebuildSphere();
+                    }
 
                     pqs.RebuildSphere();
                 }
 
                 foreach (PQSCity2 pqs in body.pqsController.GetComponentsInChildren<PQSCity2>())
                 {
+                    if (pqs.sphere != null)
+                    {
+                        pqs.sphere.radius *= scaleFactor;
+                        pqs.sphere.RebuildSphere();
+                    }
                     pqs.RebuildSphere();
                 }
             }
         }
+        
     }
 }
