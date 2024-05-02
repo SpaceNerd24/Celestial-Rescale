@@ -17,42 +17,35 @@ namespace Celestial_Rescale
         internal double starFactor;
         internal float starFactor2;
 
-        public static bool isDebug = true;
+        public static bool isDebug;
         public static bool isDoingAtmospheres = true; // make this true during release and most times if it works
         public static bool usingBrokenWay = true; // make this false unless testing or it suddenly works
 
         public void ConfigLoader()
         {
-            string filePath = "GameData/CelestialRescale/CelestialRescaleLocalSettings.cfg";
-
-            Debug.Log("Loading settings from " + filePath);
-
-            Dictionary<string, string> config = new Dictionary<string, string>();
-
-            string[] lines = File.ReadAllLines(filePath);
-
-            foreach (string line in lines)
+            Debug.Log("Starting the Config Loader");
+            foreach (ConfigNode node in GameDatabase.Instance.GetConfigNodes("CelestialRescale"))
             {
-                string[] parts = line.Split('=');
-
-                if (parts.Length == 2)
+                //Debug.Log(node);
+                // 10.33 is not a 2 you dumb config node
+                if (double.TryParse(node.GetValue("scaleFactor1"), out double parsedValue))
                 {
-                    string key = parts[0].Trim();
-                    string value = parts[1].Trim();
-                    if (key == "scaleFactor" && value != null)
-                    {
-                        Debug.Log("scaleFactor: " + value + " " + scaleFactor);
-                        scaleFactor = float.Parse(value);
-                        scaleFactor2 = float.Parse(value);
-                    }
-                    else if (value != null)
-                    {
-                        Debug.Log("Unknown key: " + key + " " + value);
-                    }
-                    else
-                    {
-                        Debug.Log("why did this break? " + key + " " + value);
-                    }
+                    // screw config nodes
+                    //Debug.Log(node.GetValue("scaleFactor1") + " pre parse");
+                    scaleFactor = parsedValue;
+                    //Debug.Log("post parse for scaleFactor, new scaleFactor: " + scaleFactor);
+
+                }
+                // this works
+                if (float.TryParse(node.GetValue("scaleFactor2"), out float parsedValue2))
+                {
+                    scaleFactor2 = parsedValue2;
+                    //Debug.Log("post parse for scaleFactor2, new scaleFactor2: " + scaleFactor2);
+                }
+                if (bool.TryParse(node.GetValue("isDebug"), out bool parsedValue3))
+                {
+                    isDebug = parsedValue3;
+                    //Debug.Log("post parse for isDebug, new isDebug: " + isDebug);
                 }
             }
         }
