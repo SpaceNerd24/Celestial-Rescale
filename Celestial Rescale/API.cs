@@ -21,7 +21,8 @@ namespace Celestial_Rescale.API
             return scaleFactor2;
         }
 
-        /*
+        // not working currently
+        /* 
         public static void ChangeScaleFactor(double newScaleFactor)
         {
             CelestialRescale CRInstance = new CelestialRescale();

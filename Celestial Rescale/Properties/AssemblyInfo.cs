@@ -12,7 +12,6 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyProduct("Celestial Rescale")]
 [assembly: AssemblyCopyright("Copyright ©  2024")]
 [assembly: AssemblyTrademark("")]
-[assembly: KSPAssemblyDependency("ToolbarController", 1, 0)]
 [assembly: AssemblyCulture("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible
