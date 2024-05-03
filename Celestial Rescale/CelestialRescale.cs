@@ -17,6 +17,13 @@ namespace Celestial_Rescale
         internal double starFactor;
         internal float starFactor2;
 
+        /*
+        internal static Dictionary<string, FloatCurve> bodyPresureCurvesDictionary =
+            new Dictionary<string, FloatCurve>();
+        internal static Dictionary<string, FloatCurve> bodyTempCurvesDictionary =
+            new Dictionary<string, FloatCurve>();
+        */
+
         public static bool isDebug;
         public static bool isDoingAtmospheres = true; // make this true during release and most times if it works
         public static bool usingBrokenWay = true; // make this false unless testing or it suddenly works
@@ -53,6 +60,7 @@ namespace Celestial_Rescale
         public void Start()
         {
             ConfigLoader();
+            CR_Utilis.LoadDictionaries();
             starFactor = scaleFactor / 1.75;
             starFactor2 = (float)(scaleFactor2 / 1.75);
 
@@ -179,7 +187,7 @@ namespace Celestial_Rescale
                 }
             }
 
-            //CR_API.ResetPlanets();
+            CR_API.ResetPlanets();
         }
 
         /*
@@ -385,6 +393,14 @@ namespace Celestial_Rescale
             Debug.Log("did I break the game");
             if (body != null && body.atmosphere && isDoingAtmospheres == true && usingBrokenWay == true)
             {
+                /*
+                foreach (CelestialBody curveBody in FlightGlobals.Bodies)
+                {
+                    bodyPresureCurvesDictionary.Add(body.name, body.atmospherePressureCurve);
+                    bodyTempCurvesDictionary.Add(body.name, body.atmosphereTemperatureCurve);
+                }
+                */
+
                 double topLayer = body.atmosphereDepth * scaleFactor;
                 Debug.Log("Using Broken Mode");
                 //PrintCurve(body, "First Curves");

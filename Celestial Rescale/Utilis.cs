@@ -1,23 +1,38 @@
 ﻿using UnityEngine;
 using System;
 using System.Linq;
-using KSP.UI.Screens;
-using UnityEngine.UI;
 using System.Collections.Generic;
 using System.Reflection;
 using Celestial_Rescale.API;
 
-namespace Celestial_Rescale.Utilis
+namespace Celestial_Rescale.Utilisx
 {
     public static class CR_Utilis
-    {
+    {   
+        // not currently needed
         public static string MODID = "Celestial_Rescale";
         public static string MODNAME = "Celestial Rescale";
 
+        internal static Dictionary<string, FloatCurve> bodyPresureCurvesDictionary =
+            new Dictionary<string, FloatCurve>();
+        internal static Dictionary<string, FloatCurve> bodyTempCurvesDictionary =
+            new Dictionary<string, FloatCurve>();
+
+        public static void LoadDictionaries()
+        {
+            Debug.Log("Testing the new Dictionary system");
+            foreach (CelestialBody body in FlightGlobals.Bodies)
+            {
+                bodyPresureCurvesDictionary.Add(body.name, body.atmospherePressureCurve);
+                bodyTempCurvesDictionary.Add(body.name, body.atmosphereTemperatureCurve);
+            }
+        }
+
         internal static void ResetBody(CelestialBody body)
         {
-            FloatCurve presureCurve = CR_API.GetAtmoCurve(body, false);
-            FloatCurve tempCurve = CR_API.GetAtmoCurve(body, true);
+            // dont really need the presure curves but why not
+            FloatCurve presureCurve = bodyPresureCurvesDictionary[body.name];
+            FloatCurve tempCurve = bodyTempCurvesDictionary[body.name];
             double scaleFactor = CR_API.GetScaleFactor();
             float scaleFactor2 = CR_API.GetScaleFactor2();
 
@@ -35,25 +50,54 @@ namespace Celestial_Rescale.Utilis
 
             if (body.pqsController != null)
             {
+                body.pqsController.RebuildSphere();
                 body.pqsController.mapMaxHeight /= scaleFactor;
-            }
 
-            body.pqsController.RebuildSphere();
+                foreach (PQSCity pqs in body.pqsController.GetComponentsInChildren<PQSCity>())
+                {
+                    pqs.repositionToSphereSurface = true;
+                    pqs.reorientToSphere = true;
+                    if (pqs.sphere != null)
+                    {
+                        pqs.sphere.radius /= scaleFactor;
+                        pqs.sphere.RebuildSphere();
+                    }
+
+                    pqs.RebuildSphere();
+                }
+
+                foreach (PQSCity2 pqs in body.pqsController.GetComponentsInChildren<PQSCity2>())
+                {
+                    if (pqs.sphere != null)
+                    {
+                        pqs.sphere.radius /= scaleFactor;
+                        pqs.sphere.RebuildSphere();
+                    }
+                    pqs.RebuildSphere();
+                }
+                body.pqsController.RebuildSphere();
+            }
 
             if (body.atmosphere)
             {
-                ResetAtmo(body, scaleFactor);
+                ResetAtmo(body, scaleFactor, scaleFactor2);
             }
             ResetScaledSpace(body, scaleFactor2);
             ResetOcean(body);
             ResetOrbit(body, scaleFactor);
         }
 
-        internal static void ResetAtmo(CelestialBody body, double scaleFactor)
+        internal static void ResetAtmo(CelestialBody body, double scaleFactor, float scaleFactor2)
         {
-            body.afg.outerRadius = Convert.ToSingle(body.Radius);
-            body.afg.UpdateAtmosphere(body);
-            body.atmosphereDepth /= scaleFactor;
+            if (body.afg != null)
+            {
+                body.afg.outerRadius /= scaleFactor2;
+                body.atmosphereDepth /= scaleFactor;
+                body.afg.UpdateAtmosphere(body);
+            }
+
+            body.atmosphereTemperatureCurve = bodyTempCurvesDictionary[body.name];
+            body.atmospherePressureCurve = bodyPresureCurvesDictionary[body.name];
         }
 
         internal static void ResetScaledSpace(CelestialBody body, float scaleFactor2)
@@ -79,16 +123,19 @@ namespace Celestial_Rescale.Utilis
 
         internal static void ResetOcean(CelestialBody body)
         {
-            foreach (PQSMod pqsMod in body.pqsController.GetComponentsInChildren<PQSMod>())
+            if (body.pqsController != null)
             {
-                if (pqsMod != null && body != null && body.pqsController != null && pqsMod.sphere != null) // Additional null check
+                foreach (PQSMod pqsMod in body.pqsController.GetComponentsInChildren<PQSMod>())
                 {
-                    pqsMod.RebuildSphere();
-
-                    if (pqsMod.sphere != null && pqsMod.sphere.radius != body.pqsController.radius)
+                    if (pqsMod != null && body != null && body.pqsController != null && pqsMod.sphere != null) // Additional null check
                     {
-                        pqsMod.sphere.radius = body.pqsController.radius;
-                        Debug.Log("[CelestialRescale]" + " [" + body.name + "] " + pqsMod.sphere.radius + " pqs sphere radius");
+                        pqsMod.RebuildSphere();
+
+                        if (pqsMod.sphere != null && pqsMod.sphere.radius != body.pqsController.radius)
+                        {
+                            pqsMod.sphere.radius = body.pqsController.radius;
+                            Debug.Log("[CelestialRescale]" + " [" + body.name + "] " + pqsMod.sphere.radius + " pqs sphere radius");
+                        }
                     }
                 }
             }
