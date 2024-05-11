@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using Celestial_Rescale.API;
 
-namespace Celestial_Rescale.Utilisx
+namespace Celestial_Rescale.Utilis
 {
     public static class CR_Utilis
     {   
@@ -30,7 +30,7 @@ namespace Celestial_Rescale.Utilisx
 
         internal static void ResetBody(CelestialBody body)
         {
-            // dont really need the presure curves but why not
+            // dont really need the curves but why not
             FloatCurve presureCurve = bodyPresureCurvesDictionary[body.name];
             FloatCurve tempCurve = bodyTempCurvesDictionary[body.name];
             double scaleFactor = CR_API.GetScaleFactor();

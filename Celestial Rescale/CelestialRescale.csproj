@@ -65,11 +65,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="API.cs" />
-    <Compile Include="CelestialRescale.cs" />
+    <Compile Include="CR_API.cs" />
+    <Compile Include="CR_Rescale.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Utilis.cs" />
-    <Compile Include="Version.cs" />
+    <Compile Include="CR_Utilis.cs" />
+    <Compile Include="CR_Version.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

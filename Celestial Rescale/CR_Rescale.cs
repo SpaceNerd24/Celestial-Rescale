@@ -1,16 +1,14 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-using System.IO;
 using System.Linq;
 using System;
 using Celestial_Rescale.API;
 using Celestial_Rescale.Utilis;
-using KSP.UI.Screens;
 
 namespace Celestial_Rescale
 {
     [KSPAddon(KSPAddon.Startup.MainMenu, true)]
-    internal class CelestialRescale : MonoBehaviour
+    internal class CR_Rescale : MonoBehaviour
     {
         internal float scaleFactor2 = 1;
         internal double scaleFactor = 1;
@@ -24,35 +22,30 @@ namespace Celestial_Rescale
             new Dictionary<string, FloatCurve>();
         */
 
-        public static bool isDebug;
+        internal bool isDebug;
         public static bool isDoingAtmospheres = true; // make this true during release and most times if it works
         public static bool usingBrokenWay = true; // make this false unless testing or it suddenly works
 
         public void ConfigLoader()
         {
             Debug.Log("Starting the Config Loader");
+
+            // main overall config
             foreach (ConfigNode node in GameDatabase.Instance.GetConfigNodes("CelestialRescale"))
             {
-                //Debug.Log(node);
-                // 10.33 is not a 2 you dumb config node
                 if (double.TryParse(node.GetValue("scaleFactor1"), out double parsedValue))
                 {
-                    // screw config nodes
-                    //Debug.Log(node.GetValue("scaleFactor1") + " pre parse");
                     scaleFactor = parsedValue;
-                    //Debug.Log("post parse for scaleFactor, new scaleFactor: " + scaleFactor);
 
                 }
                 // this works
                 if (float.TryParse(node.GetValue("scaleFactor2"), out float parsedValue2))
                 {
                     scaleFactor2 = parsedValue2;
-                    //Debug.Log("post parse for scaleFactor2, new scaleFactor2: " + scaleFactor2);
                 }
                 if (bool.TryParse(node.GetValue("isDebug"), out bool parsedValue3))
                 {
                     isDebug = parsedValue3;
-                    //Debug.Log("post parse for isDebug, new isDebug: " + isDebug);
                 }
             }
         }
@@ -187,7 +180,7 @@ namespace Celestial_Rescale
                 }
             }
 
-            CR_API.ResetPlanets();
+            //CR_API.ResetPlanets();
         }
 
         /*

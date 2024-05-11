@@ -4,7 +4,7 @@ using Celestial_Rescale.API;
 namespace Celestial_Rescale
 {
     [KSPAddon(KSPAddon.Startup.Instantly, true)]
-    public class Version : MonoBehaviour
+    public class CR_Version : MonoBehaviour
     {
         public static readonly System.Version version = new System.Version("0.3.2");
 

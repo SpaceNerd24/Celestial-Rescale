@@ -9,14 +9,14 @@ namespace Celestial_Rescale.API
 
         public static double GetScaleFactor()
         {
-            CelestialRescale CRInstance = new CelestialRescale();
+            CR_Rescale CRInstance = new CR_Rescale();
             double scaleFactor = CRInstance.scaleFactor;
             return scaleFactor;
         }
 
         public static float GetScaleFactor2()
         {
-            CelestialRescale CRInstance = new CelestialRescale();
+            CR_Rescale CRInstance = new CR_Rescale();
             float scaleFactor2 = CRInstance.scaleFactor2;
             return scaleFactor2;
         }
@@ -39,15 +39,10 @@ namespace Celestial_Rescale.API
             }
         }
 
-        public static FloatCurve GetAtmoCurve(CelestialBody body, bool temp)
+        public static bool GetIsDebug()
         {
-            if (temp)
-            {
-                return body.atmosphereTemperatureCurve;
-            } else
-            {
-                return body.atmospherePressureCurve;
-            }
+            CR_Rescale CRInstance = new CR_Rescale();
+            return CRInstance.isDebug;
         }
     }
 }
