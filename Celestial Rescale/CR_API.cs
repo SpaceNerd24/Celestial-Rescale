@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
-using Celestial_Rescale.Utilis;
+using CelestialRescale.Utilis;
 
-namespace Celestial_Rescale.API
+namespace CelestialRescale.API
 {
     public static class CR_API
     {

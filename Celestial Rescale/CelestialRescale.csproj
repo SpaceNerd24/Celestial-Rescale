@@ -39,9 +39,6 @@
     <Reference Include="Assembly-CSharp-firstpass">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\GOG Galaxy\Games\Kerbal Space Program\KSP_x64_Data\Managed\Assembly-CSharp-firstpass.dll</HintPath>
     </Reference>
-    <Reference Include="ClickThroughBlocker">
-      <HintPath>..\..\..\..\OneDrive\Desktop\Random (1)\New folder\GameData\000_ClickThroughBlocker\Plugins\ClickThroughBlocker.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />

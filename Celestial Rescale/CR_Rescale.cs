@@ -2,10 +2,9 @@
 using UnityEngine;
 using System.Linq;
 using System;
-using Celestial_Rescale.API;
-using Celestial_Rescale.Utilis;
+using CelestialRescale.Utilis;
 
-namespace Celestial_Rescale
+namespace CelestialRescale
 {
     [KSPAddon(KSPAddon.Startup.MainMenu, true)]
     internal class CR_Rescale : MonoBehaviour

@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
-using Celestial_Rescale.API;
 
-namespace Celestial_Rescale
+namespace CelestialRescale
 {
     [KSPAddon(KSPAddon.Startup.Instantly, true)]
     public class CR_Version : MonoBehaviour
