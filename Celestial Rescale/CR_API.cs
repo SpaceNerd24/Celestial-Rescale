@@ -39,7 +39,7 @@ namespace CelestialRescale.API
             }
         }
 
-        public static bool GetIsDebug()
+        public static bool GetDebug()
         {
             CR_Rescale CRInstance = new CR_Rescale();
             return CRInstance.isDebug;

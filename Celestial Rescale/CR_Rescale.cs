@@ -14,13 +14,6 @@ namespace CelestialRescale
         internal double starFactor;
         internal float starFactor2;
 
-        /*
-        internal static Dictionary<string, FloatCurve> bodyPresureCurvesDictionary =
-            new Dictionary<string, FloatCurve>();
-        internal static Dictionary<string, FloatCurve> bodyTempCurvesDictionary =
-            new Dictionary<string, FloatCurve>();
-        */
-
         internal bool isDebug;
         public static bool isDoingAtmospheres = true; // make this true during release and most times if it works
         public static bool usingBrokenWay = true; // make this false unless testing or it suddenly works
@@ -35,7 +28,6 @@ namespace CelestialRescale
                 if (double.TryParse(node.GetValue("scaleFactor1"), out double parsedValue))
                 {
                     scaleFactor = parsedValue;
-
                 }
                 // this works
                 if (float.TryParse(node.GetValue("scaleFactor2"), out float parsedValue2))
@@ -54,7 +46,14 @@ namespace CelestialRescale
             ConfigLoader();
             CR_Utilis.LoadDictionaries();
             starFactor = scaleFactor / 1.75;
-            starFactor2 = (float)(scaleFactor2 / 1.75);
+            starFactor2 = (float)starFactor;
+
+            PlanetariumCamera mapCam = PlanetariumCamera.fetch;
+
+            if (mapCam != null )
+            {
+                mapCam.maxDistance *= scaleFactor2;
+            }
 
             foreach (CelestialBody body in FlightGlobals.Bodies)
             {
@@ -436,8 +435,6 @@ namespace CelestialRescale
             List<double[]> list = ReadCurve(curve);
             double maxAltitude = list.Last()[0];
             bool smoothEnd = list.Last()[1] == 0 && list.Count > 2;
-
-            if (body.transform.name == "Kerbin" && list.Count > 0) { list.RemoveAt(0); }
             
             if (top > body.atmosphereDepth)
             {
@@ -619,48 +616,13 @@ namespace CelestialRescale
             return config;
         }
 
-        void PrintCurve(CelestialBody body, string name)
-        {
-            Debug.Log("Doing Curve Stuff " + name + " for body " + body.name);
-            FinalCurveStuff(body.atmospherePressureCurve, "pressureCurve");
-            //FinalCurveStuff(body.atmosphereTemperatureCurve, "temperatureCurve");
-            //FinalCurveStuff(body.atmosphereTemperatureSunMultCurve, "temperatureSunMultCurve");
-            Debug.Log("curve1");
-        }
-
-        void PrintCurve(List<double[]> list, string name)
-        {
-            ConfigCurveStuff(WriteCurve(list), name);
-            Debug.Log("curve2");
-        }
-
-        void ConfigCurveStuff(ConfigNode config, string name)
-        {
-            FloatCurve curve = new FloatCurve();
-            curve.Load(config);
-            FinalCurveStuff(curve, name);
-            Debug.Log("curve3");
-        }
-
-        void FinalCurveStuff(FloatCurve curve, string name)
-        {
-            ConfigNode config = new ConfigNode();
-            curve.Save(config);
-            Debug.Log("CelestialRescale.AtmosphereFixer " + name);
-            Debug.Log("curve4");
-            foreach (string key in config.GetValues("key"))
-            {
-                Debug.Log("CelestialRescale.AtmosphereFixer " + "key = " + key);
-            }
-        }
-
-        enum IDK
+        enum CurveTypes
         {
             Exponential,
             Logarithmic,
             Polynomial
         }
-        IDK curve = IDK.Exponential;
+        CurveTypes curve = CurveTypes.Exponential;
 
         double[] Ketk(List<double[]> list)
         {
@@ -668,7 +630,7 @@ namespace CelestialRescale
             if (list.Count == 2)
             {
                 K = new double[] { 0, (list[1][1] - list[0][1]) / (list[1][0] - list[0][0]) };
-                curve = IDK.Polynomial;
+                curve = CurveTypes.Polynomial;
                 return K;
             }
             double[] dY = { list[list.Count - 2][1] - list[list.Count - 3][1], list[list.Count - 1][1] - list[list.Count - 2][1] };
@@ -678,17 +640,17 @@ namespace CelestialRescale
             if (curvature > 0)
             {
                 K = new double[] { Math.Log(list.Last()[1] / list[list.Count - 2][1]) / dX[1] };
-                curve = IDK.Exponential;
+                curve = CurveTypes.Exponential;
             }
             else if (curvature < 0 && dY[1] >= 0)
             {
                 K = new double[] { dY[1] / Math.Log(list.Last()[0] / list[list.Count - 2][0]) };
-                curve = IDK.Logarithmic;
+                curve = CurveTypes.Logarithmic;
             }
             else
             {
                 K = new double[] { curvature / 2, dY[1] / dX[1] - (list.Last()[0] + list[list.Count - 2][0]) * curvature / 2 };
-                curve = IDK.Polynomial;
+                curve = CurveTypes.Polynomial;
             }
 
             return K;
@@ -698,11 +660,11 @@ namespace CelestialRescale
         {
             double dX = X - prevKey[0];
 
-            if (curve == IDK.Exponential)
+            if (curve == CurveTypes.Exponential)
             {
                 return prevKey[1] * Math.Exp(dX * K[0]);
             }
-            else if (curve == IDK.Logarithmic)
+            else if (curve == CurveTypes.Logarithmic)
             {
                 return K[0] * Math.Log(X / prevKey[0]) + prevKey[1];
             }
@@ -722,6 +684,8 @@ namespace CelestialRescale
                 {
                     pqs.repositionToSphereSurface = true;
                     pqs.reorientToSphere = true;
+                    //pqs.spaceCenterFacility.facilityPQS.radius = body.Radius;
+                    //pqs.spaceCenterFacility.facilityPQS.RebuildSphere();
                     if (pqs.sphere != null)
                     {
                         pqs.sphere.radius *= scaleFactor;
@@ -733,6 +697,8 @@ namespace CelestialRescale
 
                 foreach (PQSCity2 pqs in body.pqsController.GetComponentsInChildren<PQSCity2>())
                 {
+                    //pqs.spaceCenterFacility.facilityPQS.radius = body.Radius;
+                    //pqs.spaceCenterFacility.facilityPQS.RebuildSphere();
                     if (pqs.sphere != null)
                     {
                         pqs.sphere.radius *= scaleFactor;
