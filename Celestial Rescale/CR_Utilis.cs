@@ -18,7 +18,13 @@ namespace CelestialRescale.Utilis
         internal static Dictionary<string, FloatCurve> bodyTempCurvesDictionary =
             new Dictionary<string, FloatCurve>();
 
-        public static void LoadDictionaries()
+        internal static PQSCity kscCity = null;
+        internal static double originalLatitude;
+        internal static double originalLongitude;
+        internal static double originalAltitude;
+        internal static Vector3 KSCOrignalPOS;
+
+        internal static void LoadDictionaries()
         {
             Debug.Log("Testing the new Dictionary system");
             foreach (CelestialBody body in FlightGlobals.Bodies)
@@ -27,6 +33,24 @@ namespace CelestialRescale.Utilis
                 bodyTempCurvesDictionary.Add(body.name, body.atmosphereTemperatureCurve);
             }
         }
+
+        internal static void LoadKSCOriganlPOS()
+        {
+            foreach (PQSCity city in Resources.FindObjectsOfTypeAll<PQSCity>())
+            {
+                if (city.name == "KSC")
+                {
+                    kscCity = city;
+                    Debug.Log("KSC found");
+                    KSCOrignalPOS = kscCity.repositionRadial;
+                    originalLatitude = kscCity.lat;
+                    originalLongitude = kscCity.lon;
+                    originalAltitude = kscCity.repositionRadiusOffset;
+                    break;
+                }
+            }
+        }
+
 
         internal static void ResetBody(CelestialBody body)
         {

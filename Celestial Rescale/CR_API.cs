@@ -9,16 +9,26 @@ namespace CelestialRescale.API
 
         public static double GetScaleFactor()
         {
-            CR_Rescale CRInstance = new CR_Rescale();
-            double scaleFactor = CRInstance.scaleFactor;
-            return scaleFactor;
+            foreach (ConfigNode node in GameDatabase.Instance.GetConfigNodes("CelestialRescale"))
+            {
+                if (double.TryParse(node.GetValue("scaleFactor1"), out double parsedValue))
+                {
+                    return parsedValue;
+                }
+            }
+            return 1;
         }
 
         public static float GetScaleFactor2()
         {
-            CR_Rescale CRInstance = new CR_Rescale();
-            float scaleFactor2 = CRInstance.scaleFactor2;
-            return scaleFactor2;
+            foreach (ConfigNode node in GameDatabase.Instance.GetConfigNodes("CelestialRescale"))
+            {
+                if (double.TryParse(node.GetValue("scaleFactor1"), out double parsedValue))
+                {
+                    return ((float)parsedValue);
+                }
+            }
+            return 1;
         }
 
         // not working currently

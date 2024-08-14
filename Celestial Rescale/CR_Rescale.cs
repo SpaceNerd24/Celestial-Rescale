@@ -3,6 +3,8 @@ using UnityEngine;
 using System.Linq;
 using System;
 using CelestialRescale.Utilis;
+using System.Reflection;
+using CelestialRescale.API;
 
 namespace CelestialRescale
 {
@@ -54,6 +56,7 @@ namespace CelestialRescale
         {
             ConfigLoader();
             CR_Utilis.LoadDictionaries();
+            CR_Utilis.LoadKSCOriganlPOS();
             starFactor = scaleFactor / 1.75;
             starFactor2 = (float)starFactor;
 
@@ -181,9 +184,7 @@ namespace CelestialRescale
                     AtmosphereStart(body, atmoFactor);
                     FixScaledSpace(body);
                     ResizeOceans(body);
-                    ResizeOrbits(body);
-                    //BetterTerrainRescaling(body);
-                    
+                    ResizeOrbits(body);                    
                 }
             }
             FixPQSMainBody();
@@ -346,7 +347,6 @@ namespace CelestialRescale
 
         public void AtmosphereStart(CelestialBody body, double atmoFactor)
         {
-            Debug.Log("did I break the game?");
             if (body != null && body.atmosphere && isDoingAtmospheres == true && usingBrokenWay == true)
             {
                 /*
@@ -628,60 +628,184 @@ namespace CelestialRescale
         }
 
         // not that much better than my current system
-        
-        internal void BetterTerrainRescaling(CelestialBody body)
+        internal static double getScaleFactor()
         {
-            if (body == null && body.pqsController != null)
+            foreach (ConfigNode node in GameDatabase.Instance.GetConfigNodes("CelestialRescale"))
             {
-                foreach (PQSCity pqs in body.pqsController.GetComponentsInChildren<PQSCity>())
+                if (double.TryParse(node.GetValue("scaleFactor1"), out double parsedValue))
                 {
-                    pqs.repositionToSphereSurface = true;
-                    pqs.reorientToSphere = true;
-                    //pqs.spaceCenterFacility.facilityPQS.radius = body.Radius;
-                    //pqs.spaceCenterFacility.facilityPQS.RebuildSphere();
-                    if (pqs.sphere != null)
-                    {
-                        pqs.sphere.radius *= scaleFactor;
-                        pqs.Orientate();
-                        pqs.sphere.RebuildSphere();
-                    }
-
-                    pqs.RebuildSphere();
-                }
-
-                foreach (PQSCity2 pqs in body.pqsController.GetComponentsInChildren<PQSCity2>())
-                {
-                    //pqs.spaceCenterFacility.facilityPQS.radius = body.Radius;
-                    //pqs.spaceCenterFacility.facilityPQS.RebuildSphere();
-                    if (pqs.sphere != null)
-                    {
-                        pqs.PositioningPoint.localPosition *= (float)(body.Radius + pqs.alt);
-                        pqs.sphere.radius *= scaleFactor;
-                        pqs.Orientate();
-                        pqs.sphere.RebuildSphere();
-                    }
-                    pqs.RebuildSphere();
+                    return parsedValue;
                 }
             }
+            return 1;
         }
 
-        internal void FixPQSMainBody()
+        internal static void FixPQSMainBody()
         {
             CelestialBody body = FlightGlobals.GetHomeBody();
             if (body != null )
             {
+                double scaleFactor = getScaleFactor();                
+
                 Debug.Log("[CelestialRescale] Home Body is not null");
-                Debug.Log("[CelestialRescale] Home Body is:" + body.displayName);
+                Debug.Log("[CelestialRescale] Home Body is: " + body.name);
 
                 PQS pqsController = body.pqsController;
                 if (pqsController != null)
                 {
+                    // Space Center Cam
+                    foreach (SpaceCenterCamera camera in Resources.FindObjectsOfTypeAll<SpaceCenterCamera>())
+                    {
+                        camera.zoomInitial *= ((float)scaleFactor);
+                        camera.zoomMax *= ((float)scaleFactor);
+                        camera.zoomMin *= ((float)scaleFactor);
+                        camera.zoomSpeed *= ((float)scaleFactor);
+                        camera.altitudeInitial *= ((float)scaleFactor);
+                        camera.elevationInitial *= ((float)scaleFactor);
+                        camera.elevationMax *= ((float)scaleFactor);
+                        camera.elevationMin *= ((float)scaleFactor);
+                    }
+                    foreach (SpaceCenterCamera2 camera in Resources.FindObjectsOfTypeAll<SpaceCenterCamera2>())
+                    {
+                        camera.zoomInitial *= ((float)scaleFactor);
+                        camera.zoomMax *= ((float)scaleFactor);
+                        camera.zoomMin *= ((float)scaleFactor);
+                        camera.zoomSpeed *= ((float)scaleFactor);
+                        camera.altitudeInitial *= ((float)scaleFactor);
+                        camera.elevationInitial *= ((float)scaleFactor);
+                        camera.elevationMax *= ((float)scaleFactor);
+                        camera.elevationMin *= ((float)scaleFactor);
+                    }
+
+                    // PQSCity
                     PQSCity city = body.GetComponent<PQSCity>();
                     if (city != null)
                     {
-                        city.Orientate(true);
-                        //city.Randomize();
+                        Vector3 PlanetPOS = body.transform.position;
+                        Vector3 buildingPOS = city.transform.position;
+                        Vector3 CityLOC = (buildingPOS - PlanetPOS).normalized;
+
+                        // Max distance
+                        double maxDistance = Math.Abs(2 * pqsController.mapMaxHeight);
+                        maxDistance *= scaleFactor * 1 > 1 ? scaleFactor * 1 : 1;
+                        maxDistance += body.Radius;
+
+                        RaycastHit[] hits = Physics.RaycastAll(PlanetPOS + CityLOC * (float)maxDistance, -CityLOC, (float)maxDistance, LayerMask.GetMask("Local Scenery"));
+
+                        for (int i = 0; i < hits?.Length; i++)
+                        {
+                            if (hits[i].collider?.GetComponent<PQ>())
+                            {
+                                Debug.Log("Hit " + city.name);
+                                // Parameters
+                                double oldGroundLevel = pqsController.GetSurfaceHeight(city.repositionRadial) - body.Radius;
+                                double oldOceanOffset = body.ocean && oldGroundLevel < 0 ? oldGroundLevel : 0d;
+                                oldGroundLevel = body.ocean && oldGroundLevel < 0 ? 0d : oldGroundLevel;
+                                double groundLevel = (hits[i].point - PlanetPOS).magnitude - body.Radius;
+                                double oceanOffset = body.ocean && groundLevel < 0 ? groundLevel : 0d;
+                                groundLevel = body.ocean && groundLevel < 0 ? 0d : groundLevel;
+
+                                if (!city.repositionToSphere && !city.repositionToSphereSurface)
+                                {
+                                    double builtInOffset = (city.repositionRadiusOffset - body.Radius - oldGroundLevel - oceanOffset) / scaleFactor - (groundLevel + oceanOffset - oldGroundLevel - oldOceanOffset) / (scaleFactor * 1);
+                                    city.repositionRadiusOffset = body.Radius + groundLevel + oceanOffset + builtInOffset * scaleFactor;
+                                }
+                                else if (city.repositionToSphere && !city.repositionToSphereSurface)
+                                {
+                                    double builtInOffset = (city.repositionRadiusOffset - oldGroundLevel) / scaleFactor - (groundLevel - oldGroundLevel) / (scaleFactor * 1);
+                                    city.repositionRadiusOffset = groundLevel + builtInOffset * scaleFactor;
+                                }
+                                else
+                                {
+                                    double builtInOffset = city.repositionRadiusOffset / scaleFactor - (groundLevel + oceanOffset - oldGroundLevel - oldOceanOffset) / (scaleFactor * 1);
+                                    city.repositionRadiusOffset = builtInOffset * scaleFactor + groundLevel + oceanOffset - oldGroundLevel - oldOceanOffset;
+                                }
+                            }
+                        }
+
+                        city.Orientate();
                     }
+
+                    // PQSCity2
+                    PQSCity2 city2 = body.GetComponent<PQSCity2>();
+                    if (city2 != null)
+                    {
+                        Vector3 PlanetPOS = body.transform.position;
+                        Vector3 buildingPOS = city2.transform.position;
+                        Vector3 CityLOC = (buildingPOS - PlanetPOS).normalized;
+
+                        // Max distance
+                        double maxDistance = Math.Abs(2 * pqsController.mapMaxHeight);
+                        maxDistance *= scaleFactor * 1 > 1 ? scaleFactor * 1 : 1;
+                        maxDistance += body.Radius;
+
+                        RaycastHit[] hits = Physics.RaycastAll(PlanetPOS + CityLOC * (float)maxDistance, -CityLOC, (float)maxDistance, LayerMask.GetMask("Local Scenery"));
+
+                        for (int i = 0; i < hits?.Length; i++)
+                        {
+                            if (hits[i].collider?.GetComponent<PQ>())
+                            {
+                                
+                            }
+
+                            Debug.Log("Hit " + city2.name);
+                            // Parameters
+                            double oldGroundLevel = pqsController.GetSurfaceHeight(city2.PlanetRelativePosition) - body.Radius;
+                            double oldOceanOffset = body.ocean && oldGroundLevel < 0 ? oldGroundLevel : 0d;
+                            oldGroundLevel = body.ocean && oldGroundLevel < 0 ? 0d : oldGroundLevel;
+                            double groundLevel = (hits[i].point - PlanetPOS).magnitude - body.Radius;
+                            double oceanOffset = body.ocean && groundLevel < 0 ? groundLevel : 0d;
+                            groundLevel = body.ocean && groundLevel < 0 ? 0d : groundLevel;
+
+                            city2.PositioningPoint.localPosition /= (float)(body.Radius + city2.alt);
+
+                            if (!city2.snapToSurface)
+                            {
+                                double builtInOffset = (city2.alt - oldGroundLevel) / scaleFactor - (groundLevel - oldGroundLevel) / (scaleFactor * 1);
+                                city2.alt = groundLevel + builtInOffset * scaleFactor;
+                            }
+                            else
+                            {
+                                double builtInOffset = city2.snapHeightOffset / scaleFactor - (groundLevel + oceanOffset - oldGroundLevel - oldOceanOffset) / (scaleFactor * 1);
+                                double newOffset = builtInOffset * scaleFactor + groundLevel + oceanOffset - oldGroundLevel - oldOceanOffset;
+                                city2.alt += newOffset - city2.snapHeightOffset;
+                                city2.snapHeightOffset = newOffset;
+                            }
+                        }
+
+                        city2.PositioningPoint.localPosition *= (float)(body.Radius + city2.alt);
+
+                        city2.Orientate();
+                    }
+
+                    PQSMod_FlattenArea pqs = body.GetComponent<PQSMod_FlattenArea>();
+
+                    if (pqs != null)
+                    {
+                        pqs.innerRadius *= scaleFactor;
+                        pqs.outerRadius *= scaleFactor;
+                    }
+                }
+
+                PQSCity kscCity = CR_Utilis.kscCity;
+
+                if (kscCity != null)
+                {
+                    double originalLatitude = CR_Utilis.originalLatitude;
+                    double originalLongitude = CR_Utilis.originalLongitude;
+                    double originalAltitude = CR_Utilis.originalAltitude;
+
+                    // Detect the rescaled planet's radius
+                    double rescaledRadius = body.Radius;
+
+                    // Calculate the new position based on the original latitude, longitude, and the new radius
+                    kscCity.repositionToSphere = true;
+                    kscCity.repositionRadial = body.GetRelSurfacePosition(originalLatitude, originalLongitude, rescaledRadius);
+                    kscCity.repositionRadiusOffset = originalAltitude; // Keep original altitude
+
+                    // Apply the changes
+                    kscCity.OnSphereReset();
+                    kscCity.Orientate(true);
                 }
             } else
             {
