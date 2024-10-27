@@ -45,7 +45,7 @@ namespace CelestialRescale.Utilis
                     KSCOrignalPOS = kscCity.repositionRadial;
                     originalLatitude = kscCity.lat;
                     originalLongitude = kscCity.lon;
-                    originalAltitude = kscCity.repositionRadiusOffset;
+                    originalAltitude = kscCity.alt;
                     break;
                 }
             }

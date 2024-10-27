@@ -40,7 +40,7 @@ namespace CelestialRescale.API
         }
         */
 
-        public static void ResetPlanets()
+        internal static void ResetPlanets()
         {
             foreach (CelestialBody body in FlightGlobals.Bodies)
             {
