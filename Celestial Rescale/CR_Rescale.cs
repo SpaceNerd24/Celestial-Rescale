@@ -730,12 +730,12 @@ namespace CelestialRescale
                 if (kscCity != null)
                 {
                     Debug.Log("[CelestialRescale] [KSCMover] Moving the KSC");
-                    double latitudeOffset = 10.0 * scaleFactor; // Move by scaleFactor degrees
-                    double longitudeOffset = 10.0 * scaleFactor; // Move by scaleFactor degrees
+                    double latitudeOffset = 5.0 * scaleFactor; // Move by scaleFactor degrees
+                    double longitudeOffset = scaleFactor; // Move by scaleFactor degrees
 
                     // Adjust the latitude and longitude
-                    double newLatitude = kscCity.lat + latitudeOffset;
-                    double newLongitude = kscCity.lon + longitudeOffset;
+                    double newLatitude = kscCity.lat;// - latitudeOffset;
+                    double newLongitude = kscCity.lon - longitudeOffset;
                     double originalAltitude = CR_Utilis.originalAltitude * 20;
 
                     // Detect the rescaled planet's radius
