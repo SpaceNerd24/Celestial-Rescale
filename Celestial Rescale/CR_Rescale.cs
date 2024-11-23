@@ -3,7 +3,6 @@ using UnityEngine;
 using System.Linq;
 using System;
 using CelestialRescale.Utilis;
-using CelestialRescale.API;
 
 namespace CelestialRescale
 {
@@ -15,6 +14,7 @@ namespace CelestialRescale
         internal double starFactor;
         internal float starFactor2;
         internal double atmoFactor;
+        internal double offsetFactor;
 
         internal bool isDebug;
         public static bool isDoingAtmospheres = true; // make this true during release and most times if it works
@@ -43,10 +43,15 @@ namespace CelestialRescale
                         atmoFactor = parsedValue2;
                     }
                 }
-
-                if (bool.TryParse(node.GetValue("isDebug"), out bool parsedValue3))
+                
+                if (double.TryParse(node.GetValue("offsetFactor1"), out double parsedValue3))
                 {
-                    isDebug = parsedValue3;
+                    offsetFactor = parsedValue3;
+                }
+
+                if (bool.TryParse(node.GetValue("isDebug"), out bool parsedValue4))
+                {
+                    isDebug = parsedValue4;
                 }
             }
         }
@@ -58,7 +63,6 @@ namespace CelestialRescale
             CR_Utilis.LoadKSCOriganlPOS();
             starFactor = scaleFactor / 1.75;
             starFactor2 = (float)starFactor;
-            
 
             PlanetariumCamera mapCam = PlanetariumCamera.fetch;
 
@@ -596,7 +600,7 @@ namespace CelestialRescale
             return 1;
         }
 
-        internal static void FixPQSMainBody()
+        internal void FixPQSMainBody()
         {
             bool doPQSCity = false;
             CelestialBody body = FlightGlobals.GetHomeBody();
@@ -735,7 +739,7 @@ namespace CelestialRescale
 
                     // Adjust the latitude and longitude
                     double newLatitude = kscCity.lat;// - latitudeOffset;
-                    double newLongitude = kscCity.lon - longitudeOffset;
+                    double newLongitude = kscCity.lon - longitudeOffset * offsetFactor;
                     double originalAltitude = CR_Utilis.originalAltitude * 20;
 
                     // Detect the rescaled planet's radius
@@ -747,6 +751,8 @@ namespace CelestialRescale
                     kscCity.alt = CR_Utilis.originalAltitude * 10;
 
                     // Apply the changes
+                    kscCity.repositionToSphereSurface = true;
+                    kscCity.repositionToSphereSurfaceAddHeight = true;
                     kscCity.Orientate();
                     Debug.Log("[CelestialRescale] [KSCMover] " + $"KSC origial pos: Latitude = {CR_Utilis.originalLatitude}, Longitude = {CR_Utilis.originalLongitude}");
                     Debug.Log("[CelestialRescale] [KSCMover] " + $"KSC moved to new position: Latitude = {newLatitude}, Longitude = {newLongitude}");
