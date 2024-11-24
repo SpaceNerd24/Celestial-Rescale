@@ -38,12 +38,13 @@ namespace CelestialRescale
                     if (parsedValue2 == 0)
                     {
                         atmoFactor = scaleFactor * 0.75;
-                    } else
+                    }
+                    else
                     {
                         atmoFactor = parsedValue2;
                     }
                 }
-                
+
                 if (double.TryParse(node.GetValue("offsetFactor1"), out double parsedValue3))
                 {
                     offsetFactor = parsedValue3;
@@ -66,7 +67,7 @@ namespace CelestialRescale
 
             PlanetariumCamera mapCam = PlanetariumCamera.fetch;
 
-            if (mapCam != null )
+            if (mapCam != null)
             {
                 mapCam.maxDistance *= scaleFactor2;
             }
@@ -105,7 +106,7 @@ namespace CelestialRescale
                     ResizeOrbits(body);
                     FixScaledSpace(body);
                     if (body.atmosphere)
-                    {   
+                    {
                         AtmosphereStart(body, atmoFactor);
                     }
                 }
@@ -184,7 +185,7 @@ namespace CelestialRescale
                     {
                         Debug.Log("[CelestialRescale]" + " [" + body.name + "] " + body.Radius);
                     }
-                    
+
                     AtmosphereStart(body, atmoFactor);
                     ResizeOceans(body);
                     ResizeOrbits(body);
@@ -350,11 +351,12 @@ namespace CelestialRescale
             List<double[]> list = ReadCurve(curve);
             double maxAltitude = list.Last()[0];
             bool smoothEnd = list.Last()[1] == 0 && list.Count > 2;
-            
+
             if (top > body.atmosphereDepth)
             {
                 Extend(list, top);
-            } else
+            }
+            else
             {
                 Debug.Log("IDK this broke: " + " TOP: " + top + " atmodDepth: " + body.atmosphereDepth + " Max alt: " + maxAltitude);
             }
@@ -487,7 +489,7 @@ namespace CelestialRescale
             ConfigNode config = new ConfigNode();
             List<double[]> list = new List<double[]>();
             MainParser<double> value = new MainParser<double>();
-            
+
 
             curve.Save(config);
 
@@ -604,9 +606,9 @@ namespace CelestialRescale
         {
             bool doPQSCity = false;
             CelestialBody body = FlightGlobals.GetHomeBody();
-            if (body != null )
+            if (body != null)
             {
-                double scaleFactor = getScaleFactor();                
+                double scaleFactor = getScaleFactor();
 
                 Debug.Log("[CelestialRescale] [KSCMover] Home Body is not null");
                 Debug.Log("[CelestialRescale] [KSCMover] Home Body is: " + body.name);
@@ -696,7 +698,7 @@ namespace CelestialRescale
                         {
                             if (hits[i].collider?.GetComponent<PQ>())
                             {
-                                
+
                             }
 
                             // Parameters
@@ -740,7 +742,6 @@ namespace CelestialRescale
                     // Adjust the latitude and longitude
                     double newLatitude = kscCity.lat;// - latitudeOffset;
                     double newLongitude = kscCity.lon - longitudeOffset * offsetFactor;
-                    double originalAltitude = CR_Utilis.originalAltitude * 20;
 
                     // Detect the rescaled planet's radius
                     double rescaledRadius = body.Radius;
@@ -748,7 +749,6 @@ namespace CelestialRescale
                     // Calculate the new position based on the original latitude, longitude, and the new radius
                     kscCity.repositionToSphere = true;
                     kscCity.repositionRadial = body.GetRelSurfacePosition(newLatitude, newLongitude, rescaledRadius);
-                    kscCity.alt = CR_Utilis.originalAltitude * 10;
 
                     // Apply the changes
                     kscCity.repositionToSphereSurface = true;
@@ -756,7 +756,7 @@ namespace CelestialRescale
                     kscCity.Orientate();
                     Debug.Log("[CelestialRescale] [KSCMover] " + $"KSC origial pos: Latitude = {CR_Utilis.originalLatitude}, Longitude = {CR_Utilis.originalLongitude}");
                     Debug.Log("[CelestialRescale] [KSCMover] " + $"KSC moved to new position: Latitude = {newLatitude}, Longitude = {newLongitude}");
-                    
+
                     body.scaledBody.transform.localScale /= (float)scaleFactor;
 
                     ScaledSpaceFader[] faders = Resources.FindObjectsOfTypeAll<ScaledSpaceFader>();
@@ -770,7 +770,8 @@ namespace CelestialRescale
                         }
                     }
                 }
-            } else
+            }
+            else
             {
                 Debug.Log("[CelestialRescale] [KSCMover] Home Body is null");
             }

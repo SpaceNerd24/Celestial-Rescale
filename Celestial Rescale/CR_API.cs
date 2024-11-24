@@ -19,40 +19,16 @@ namespace CelestialRescale.API
             return 1;
         }
 
-        public static float GetScaleFactor2()
+        public static bool GetDebug()
         {
             foreach (ConfigNode node in GameDatabase.Instance.GetConfigNodes("CelestialRescale"))
             {
-                if (double.TryParse(node.GetValue("scaleFactor1"), out double parsedValue))
+                if (bool.TryParse(node.GetValue("isDebug"), out bool parsedValue))
                 {
-                    return ((float)parsedValue);
+                    return parsedValue;
                 }
             }
-            return 1;
-        }
-
-        // not working currently
-        /* 
-        public static void ChangeScaleFactor(double newScaleFactor)
-        {
-            CelestialRescale CRInstance = new CelestialRescale();
-            CRInstance.scaleFactor = newScaleFactor;
-        }
-        */
-
-        internal static void ResetPlanets()
-        {
-            foreach (CelestialBody body in FlightGlobals.Bodies)
-            {
-                CR_Utilis.ResetBody(body);
-                Debug.Log("[CelestialRescale] Reseting Body: " + body);
-            }
-        }
-
-        public static bool GetDebug()
-        {
-            CR_Rescale CRInstance = new CR_Rescale();
-            return CRInstance.isDebug;
+            return false;
         }
     }
 }
