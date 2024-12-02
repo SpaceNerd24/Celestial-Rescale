@@ -27,7 +27,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\..\..\..\OneDrive\Desktop\Random %281%29\New folder\GameData\CelestialRescale\Plugins\</OutputPath>
+    <OutputPath>..\..\..\..\Desktop\KSP\Dev\GameData\CelestialRescale\Plugins\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -75,6 +75,7 @@
   <ItemGroup>
     <Compile Include="CR_API.cs" />
     <Compile Include="CR_Rescale.cs" />
+    <Compile Include="CR_UI.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="CR_Utilis.cs" />
     <Compile Include="CR_Version.cs" />

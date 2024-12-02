@@ -3,22 +3,19 @@ using UnityEngine;
 using System.Linq;
 using System;
 using CelestialRescale.Utilis;
+using CelestialRescale.UI;
 
 namespace CelestialRescale
 {
     [KSPAddon(KSPAddon.Startup.MainMenu, true)]
     internal class CR_Rescale : MonoBehaviour
     {
-        internal float scaleFactor2 = 1;
         internal double scaleFactor = 1;
         internal double starFactor;
-        internal float starFactor2;
         internal double atmoFactor;
         internal double offsetFactor;
 
         internal bool isDebug;
-        public static bool isDoingAtmospheres = true; // make this true during release and most times if it works
-        public static bool usingBrokenWay = true; // make this false unless testing or it suddenly works
 
         public void ConfigLoader()
         {
@@ -30,7 +27,6 @@ namespace CelestialRescale
                 if (double.TryParse(node.GetValue("scaleFactor1"), out double parsedValue))
                 {
                     scaleFactor = parsedValue;
-                    scaleFactor2 = (float)scaleFactor;
                 }
 
                 if (double.TryParse(node.GetValue("atmoFactor1"), out double parsedValue2))
@@ -59,17 +55,17 @@ namespace CelestialRescale
 
         public void Start()
         {
+            ScreenMessages.PostScreenMessage("Starting Celestial Rescale");
             ConfigLoader();
             CR_Utilis.LoadDictionaries();
             CR_Utilis.LoadKSCOriganlPOS();
             starFactor = scaleFactor / 1.75;
-            starFactor2 = (float)starFactor;
 
             PlanetariumCamera mapCam = PlanetariumCamera.fetch;
 
             if (mapCam != null)
             {
-                mapCam.maxDistance *= scaleFactor2;
+                mapCam.maxDistance *= ((float)scaleFactor);
             }
 
             foreach (CelestialBody body in FlightGlobals.Bodies)
@@ -130,11 +126,7 @@ namespace CelestialRescale
                     body.Mass *= scaleFactor;
                     body.sphereOfInfluence *= scaleFactor;
 
-                    // Random stuff that probably does not work
-
-                    //body.pqsController.radiusMax *= scaleFactor;
-                    //body.pqsController.radiusMin *= scaleFactor;
-                    if (body.pqsController != null) // Additional null check
+                    if (body.pqsController != null)
                     {
                         body.pqsController.mapMaxHeight *= scaleFactor;
                     }
@@ -185,7 +177,7 @@ namespace CelestialRescale
                     {
                         Debug.Log("[CelestialRescale]" + " [" + body.name + "] " + body.Radius);
                     }
-
+ 
                     AtmosphereStart(body, atmoFactor);
                     ResizeOceans(body);
                     ResizeOrbits(body);
@@ -193,10 +185,16 @@ namespace CelestialRescale
                 }
             }
             FixPQSMainBody();
-            //CR_API.ResetPlanets();
 
-            foreach (CelestialBody body in FlightGlobals.Bodies)
+            if (CR_UI.UICanvas == null)
             {
+                CR_UI.ShowGUI();
+                Debug.Log("[CelestialRescale] Showing UI");
+            }
+            else
+            {
+                CR_UI.Destroy();
+                Debug.Log("[CelestialRescale] Closing UI");
             }
         }
 
@@ -204,7 +202,7 @@ namespace CelestialRescale
         {
             if (body != null && body.ocean) // Additional null check
             {
-                body.oceanFogDensityPQSMult *= scaleFactor2;
+                body.oceanFogDensityPQSMult *= ((float)scaleFactor);
                 body.oceanFogPQSDepth *= scaleFactor;
                 Debug.Log("[CelestialRescale]" + " [" + body.name + "] " + body.oceanFogPQSDepth);
                 body.pqsController.RebuildSphere();
@@ -264,60 +262,41 @@ namespace CelestialRescale
 
         private void FixScaledSpace(CelestialBody body)
         {
-            if (body != null && body.scaledBody != null) // Additional null check
+            if (body != null && body.scaledBody != null)
             {
                 ScaledSpaceFader[] faders = Resources.FindObjectsOfTypeAll<ScaledSpaceFader>();
 
                 foreach (ScaledSpaceFader fader in faders)
                 {
-                    if (fader != null && fader.celestialBody == body) // Additional null check
+                    if (fader != null && fader.celestialBody == body)
                     {
                         Debug.Log("[CelestialRescale] Fader found");
-                        // Modify the properties of the fader as needed
-                        fader.fadeStart *= scaleFactor2;
-                        fader.fadeEnd *= scaleFactor2;
+                        fader.fadeStart *= ((float)scaleFactor);
+                        fader.fadeEnd *= ((float)scaleFactor);
                         break;
-                    }
-                }
-
-                body.scaledBody.transform.localScale *= scaleFactor2;
-            }
-            if (body != null && body.scaledBody != null && body.isStar) // Additional null check
-            {
-                ScaledSpaceFader[] faders = Resources.FindObjectsOfTypeAll<ScaledSpaceFader>();
-
-                foreach (ScaledSpaceFader fader in faders)
-                {
-                    if (fader != null && fader.celestialBody == body) // Additional null check
+                    } else if (body.isStar)
                     {
                         Debug.Log("[CelestialRescale] Star Fader found");
-                        // Modify the properties of the fader as needed
-                        fader.fadeStart *= starFactor2;
-                        fader.fadeEnd *= starFactor2;
+                        fader.fadeStart *= ((float)starFactor);
+                        fader.fadeEnd *= ((float)starFactor);
                         break;
                     }
                 }
 
-                body.scaledBody.transform.localScale *= starFactor2;
+                if (!body.isStar)
+                {
+                    body.scaledBody.transform.localScale *= ((float)scaleFactor);
+                } else
+                {
+                    body.scaledBody.transform.localScale *= ((float)starFactor);
+                }
             }
-        }
-        public void Update()
-        {
-            // TODO: Add new UI later
         }
 
         public void AtmosphereStart(CelestialBody body, double atmoFactor)
         {
-            if (body != null && body.atmosphere && isDoingAtmospheres == true && usingBrokenWay == true)
+            if (body != null && body.atmosphere)
             {
-                /*
-                foreach (CelestialBody curveBody in FlightGlobals.Bodies)
-                {
-                    bodyPresureCurvesDictionary.Add(body.name, body.atmospherePressureCurve);
-                    bodyTempCurvesDictionary.Add(body.name, body.atmosphereTemperatureCurve);
-                }
-                */
-
                 double topLayer = body.atmosphereDepth * atmoFactor;
 
                 if (body.afg != null)
@@ -358,7 +337,7 @@ namespace CelestialRescale
             }
             else
             {
-                Debug.Log("IDK this broke: " + " TOP: " + top + " atmodDepth: " + body.atmosphereDepth + " Max alt: " + maxAltitude);
+                Debug.Log("IDK this broke: " + " TOP: " + top + " atmoDepth: " + body.atmosphereDepth + " Max alt: " + maxAltitude);
             }
 
             if (smoothEnd) { list.RemoveAt(list.Count - 1); }
@@ -380,32 +359,26 @@ namespace CelestialRescale
         {
             FloatCurve curve = new FloatCurve();
             curve.Load(WriteCurve(list));
-            double minPressure = list.First()[1];
-            double maxPressure = list.First()[1];
+
+            double minPressure = list.Min(item => item[1]);
+            double maxPressure = list.Max(item => item[1]);
+            double range = maxPressure - minPressure;
 
             for (int i = 0; i < list.Count; i++)
             {
-                if (list[i][1] < minPressure)
-                    minPressure = list[i][1];
-                if (list[i][1] > maxPressure)
-                    maxPressure = list[i][1];
-            }
-
-            for (int i = 0; i < list.Count; i++)
-            {
-                list[i][1] = (list[i][1] - minPressure) * maxPressure / (maxPressure - minPressure);
+                double[] current = list[i];
+                current[1] = (current[1] - minPressure) * maxPressure / range;
 
                 if (i > 0)
                 {
-                    double dX = 0.01 * (list[i][0] - list[i - 1][0]);
-                    double dY = list[i][1] - ((curve.Evaluate((float)(list[i][0] - dX)) - minPressure) * maxPressure / (maxPressure - minPressure));
-                    list[i][2] = dY / dX;
-                    list[i][3] = dY / dX;
+                    double[] previous = list[i - 1];
+                    double dX = 0.01 * (current[0] - previous[0]);
+                    double dY = current[1] - ((curve.Evaluate((float)(current[0] - dX)) - minPressure) * maxPressure / range);
+                    current[2] = current[3] = dY / dX;
                 }
             }
 
-            list.Last()[2] = 0;
-            list.Last()[3] = 0;
+            list[list.Count - 1][2] = list[list.Count - 1][3] = 0;
         }
 
         public void Normalize(CelestialBody body, double altitude)
@@ -459,30 +432,25 @@ namespace CelestialRescale
 
         void Extend(List<double[]> list, double topLayer)
         {
-            double newAltitude = list.Last()[0];
-            double dX = list.Last()[0] - list[list.Count - 2][0];
+            double dX = list[list.Count - 1][0] - list[list.Count - 2][0];
+            double newAltitude = list[list.Count - 1][0];
             double[] K = Ketk(list);
 
-            for (int i = 0; newAltitude < topLayer; i++)
+            while (newAltitude < topLayer)
             {
                 newAltitude += dX;
-                double newPressure = KetY(newAltitude, list.Last(), K);
-                double tangent = (newPressure - KetY(newAltitude - dX * 0.01, list.Last(), K)) / (dX * 0.01);
+                double newPressure = KetY(newAltitude, list[list.Count - 1], K);
+                double tangent = (newPressure - KetY(newAltitude - dX * 0.01, list[list.Count - 1], K)) / (dX * 0.01);
 
-                double[] newKey = { newAltitude, newPressure, tangent, tangent };
-
-                if (newKey[1] < 0)
+                if (newPressure < 0)
                 {
-                    if (list.Last()[1] == 0)
-                        break;
-                    else
-                        newKey[1] = 0;
+                    if (list[list.Count - 1][1] == 0) break;
+                    newPressure = 0;
                 }
 
-                list.Add(newKey);
+                list.Add(new[] { newAltitude, newPressure, tangent, tangent });
             }
         }
-
 
         List<double[]> ReadCurve(FloatCurve curve)
         {
@@ -506,7 +474,7 @@ namespace CelestialRescale
         {
             if (topLayer > curve.maxTime)
             {
-                List<double[]> list = ReadCurve(curve); /* Avoid Bad Curves ==> */ if (list.Count == 0) { Debug.Log("AtmosphereTopLayer.QuickFix" + " This curve is pointless."); return; }
+                List<double[]> list = ReadCurve(curve); if (list.Count == 0) { ; return; }
                 list.Last()[3] = 0;
                 list.Add(new double[] { topLayer, list.Last()[1], 0, 0 });
                 curve.Load(WriteCurve(list));
@@ -590,6 +558,7 @@ namespace CelestialRescale
         }
 
         // not that much better than my current system
+        // STFU IT WORKS
         internal static double getScaleFactor()
         {
             foreach (ConfigNode node in GameDatabase.Instance.GetConfigNodes("CelestialRescale"))

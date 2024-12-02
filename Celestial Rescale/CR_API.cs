@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using CelestialRescale.Utilis;
+using CelestialRescale.UI;
 
 namespace CelestialRescale.API
 {
@@ -29,6 +30,20 @@ namespace CelestialRescale.API
                 }
             }
             return false;
+        }
+
+        public static void toggleUI()
+        {
+            if (CR_UI.UICanvas == null)
+            {
+                CR_UI.ShowGUI();
+                Debug.Log("[CelestialRescale] Showing UI");
+            }
+            else
+            {
+                CR_UI.Destroy();
+                Debug.Log("[CelestialRescale] Closing UI");
+            }
         }
     }
 }
