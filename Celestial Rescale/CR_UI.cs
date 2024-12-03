@@ -15,7 +15,6 @@ namespace CelestialRescale.UI
         bool isTogglingUI;
         public void Update()
         {
-            Debug.Log("sdfsf");
             isTogglingUI = GameSettings.MODIFIER_KEY.GetKey() && Input.GetKeyDown(KeyCode.C);
 
             if (isTogglingUI)
@@ -94,7 +93,7 @@ namespace CelestialRescale.UI
                 UICanvas.AddComponent<CR_UI>();
                 UICanvas.transform.position = pos;
 
-                GameObject checkButton = (GameObject)GameObject.Find("CloseButton");
+                GameObject checkButton = (GameObject)GameObject.Find("Button");
                 Button button = checkButton.GetComponent<Button>();
 
                 button.onClick.AddListener(onButtonClick);
@@ -102,11 +101,9 @@ namespace CelestialRescale.UI
         }
 
         public static void onButtonClick()
-        { 
-            if (UICanvas != null)
-            {
-                Destroy();
-            }
+        {
+            ScreenMessages.PostScreenMessage("Closing UI");
+            Destroy();
         }
 
         public void OnBeginDrag(PointerEventData data)

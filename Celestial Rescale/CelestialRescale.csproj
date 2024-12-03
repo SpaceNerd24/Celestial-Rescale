@@ -81,4 +81,7 @@
     <Compile Include="CR_Version.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>python "C:/Rando/thing.py"</PostBuildEvent>
+  </PropertyGroup>
 </Project>
