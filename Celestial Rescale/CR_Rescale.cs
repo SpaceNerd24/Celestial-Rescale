@@ -24,38 +24,44 @@ namespace CelestialRescale
             // main overall config
             foreach (ConfigNode node in GameDatabase.Instance.GetConfigNodes("CelestialRescale"))
             {
-                if (double.TryParse(node.GetValue("scaleFactor1"), out double parsedValue))
+                if (node != null)
                 {
-                    scaleFactor = parsedValue;
-                }
-
-                if (double.TryParse(node.GetValue("atmoFactor1"), out double parsedValue2))
-                {
-                    if (parsedValue2 == 0)
+                    if (double.TryParse(node.GetValue("scaleFactor1"), out double parsedValue))
                     {
-                        atmoFactor = scaleFactor * 0.75;
+                        scaleFactor = parsedValue;
                     }
-                    else
+
+                    if (double.TryParse(node.GetValue("atmoFactor1"), out double parsedValue2))
                     {
-                        atmoFactor = parsedValue2;
+                        if (parsedValue2 == 0)
+                        {
+                            atmoFactor = scaleFactor * 0.75;
+                        }
+                        else
+                        {
+                            atmoFactor = parsedValue2;
+                        }
                     }
-                }
 
-                if (double.TryParse(node.GetValue("offsetFactor1"), out double parsedValue3))
-                {
-                    offsetFactor = parsedValue3;
-                }
+                    if (double.TryParse(node.GetValue("offsetFactor1"), out double parsedValue3))
+                    {
+                        offsetFactor = parsedValue3;
+                    }
 
-                if (bool.TryParse(node.GetValue("isDebug"), out bool parsedValue4))
+                    if (bool.TryParse(node.GetValue("isDebug"), out bool parsedValue4))
+                    {
+                        isDebug = parsedValue4;
+                    }
+                } else
                 {
-                    isDebug = parsedValue4;
+                    setDeafultSettings(1);
                 }
             }
         }
 
         public void Start()
         {
-            ScreenMessages.PostScreenMessage("Starting Celestial Rescale");
+            System.Diagnostics.Stopwatch stopwatch = System.Diagnostics.Stopwatch.StartNew();
             ConfigLoader();
             CR_Utilis.LoadDictionaries();
             CR_Utilis.LoadKSCOriganlPOS();
@@ -84,16 +90,14 @@ namespace CelestialRescale
 
                     double originalRadius = body.Radius;
                     double targetRadius = body.Radius * scaleFactor;
-
-                    // Adjust other properties pt 1
-
                     body.Radius *= scaleFactor;
                     body.Mass *= scaleFactor;
 
-                    // Log the new radius (If there is a new one)
+                    // Log the new radis (If there is a new one)
                     if (body.Radius == originalRadius)
                     {
                         Debug.LogError("[CelestialRescale]" + " [" + body.name + "] " + body.name + " is not working");
+                        return; // Eh fuck it 
                     }
                     else if (body.Radius == targetRadius)
                     {
@@ -195,6 +199,12 @@ namespace CelestialRescale
             {
                 CR_UI.Destroy();
                 Debug.Log("[CelestialRescale] Closing UI");
+            }
+
+            if (true) // Was going to do something here but this works too
+            {
+                stopwatch.Stop();
+                Debug.Log($"[CelestialRescale] Completed in {stopwatch.Elapsed.TotalSeconds} Seconds");
             }
         }
 
@@ -744,6 +754,32 @@ namespace CelestialRescale
             {
                 Debug.Log("[CelestialRescale] [KSCMover] Home Body is null");
             }
+        }
+
+        public void setDeafultSettings(double num)
+        {
+            switch (num) // Basic simple rescales
+            {
+                default:
+                    scaleFactor = 1;
+                    break;
+                case 1: 
+                    scaleFactor = 2.5;
+                    break;
+                case 2:
+                    scaleFactor = 5.4;
+                    break;
+                case 3:
+                    scaleFactor = 7.6;
+                    break;
+                case 4:
+                    scaleFactor = 10.618;
+                    break;
+            }
+
+            isDebug = false;
+            offsetFactor = 1;
+            atmoFactor = 0;
         }
     }
 }

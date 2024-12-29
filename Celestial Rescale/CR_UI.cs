@@ -1,4 +1,5 @@
 ﻿using CelestialRescale.API;
+using KSP.UI.Screens;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq.Expressions;
@@ -12,6 +13,35 @@ namespace CelestialRescale.UI
     [KSPAddon(KSPAddon.Startup.MainMenu, true)]
     public class CRUIUpdate : MonoBehaviour
     {
+        private ApplicationLauncherButton toolbarButton;
+
+        public void Start()
+        {
+            GameEvents.onGUIApplicationLauncherReady.Add(OnGUIApplicationLauncherReady);
+        }
+
+        private void OnGUIApplicationLauncherReady()
+        {
+            if (ApplicationLauncher.Instance != null && toolbarButton == null)
+            {
+                toolbarButton = ApplicationLauncher.Instance.AddModApplication(
+                    OnButtonClick,   // Called when clicked
+                    OnButtonClick,   // Called when toggled off
+                    null,            // Called when hovered
+                    null,            // Called when unhovered
+                    null,            // Called when enabled
+                    null,            // Called when disabled
+                    ApplicationLauncher.AppScenes.MAINMENU,
+                    GameDatabase.Instance.GetTexture("CelestialRescale/Resources/icon.png", false)
+                );
+            }
+        }
+
+        private void OnButtonClick()
+        {
+            ToggleUI();
+        }
+
         bool isTogglingUI;
         public void Update()
         {
@@ -19,17 +49,21 @@ namespace CelestialRescale.UI
 
             if (isTogglingUI)
             {
-                Debug.Log("[CelestialRescale] Toggling UI");
-                if (CR_UI.UICanvas == null)
-                {
-                    Debug.Log("[CelestialRescale] Showing UI");
-                    CR_UI.ShowGUI();
-                }
-                else
-                {
-                    Debug.Log("[CelestialRescale] Closing UI");
-                    CR_UI.Destroy();
-                }
+                ToggleUI();
+            }
+        }
+
+        private void ToggleUI()
+        {
+            if (CR_UI.UICanvas == null)
+            {
+                Debug.Log("[CelestialRescale] Showing UI");
+                CR_UI.ShowGUI();
+            }
+            else
+            {
+                Debug.Log("[CelestialRescale] Closing UI");
+                CR_UI.Destroy();
             }
         }
     }
@@ -60,6 +94,9 @@ namespace CelestialRescale.UI
         private static Vector2 altstart;
         private static Vector2 pos;
 
+        private const string CloseButtonName = "CloseButton";
+        private const string VersionObjectName = "Version";
+
         public void Awake()
         {
             GameEvents.onGameSceneSwitchRequested.Add(OnSceneChange);
@@ -75,34 +112,46 @@ namespace CelestialRescale.UI
 
         public static void Destroy()
         {
-            pos = UICanvas.transform.position;
-            UICanvas.DestroyGameObject();
-            UICanvas = null;
+            if (UICanvas != null)
+            {
+                pos = UICanvas.transform.position;
+                UICanvas.DestroyGameObject();
+                UICanvas = null;
+            }
         }
 
         public static void ShowGUI()
         {
             if (UICanvas != null)
             {
+                Debug.LogError("[CelestialRescale] UICanvas already exists");
                 return;
+            }
+
+            UICanvas = Instantiate(CRUILoader.PanelPrefab);
+            UICanvas.transform.SetParent(MainCanvasUtil.MainCanvas.transform);
+            UICanvas.AddComponent<CR_UI>();
+            UICanvas.transform.position = pos;
+
+            GameObject checkButton = GameObject.Find(CloseButtonName);
+            GameObject versionObject = GameObject.Find(VersionObjectName);
+
+            if (versionObject != null && checkButton != null)
+            {
+                Text versionText = versionObject.GetComponent<Text>();
+                versionText.text = CR_Version.version;
+
+                Button button = checkButton.GetComponent<Button>();
+                button.onClick.AddListener(OnCloseButtonClick);
             }
             else
             {
-                UICanvas = Instantiate(CRUILoader.PanelPrefab);
-                UICanvas.transform.SetParent(MainCanvasUtil.MainCanvas.transform);
-                UICanvas.AddComponent<CR_UI>();
-                UICanvas.transform.position = pos;
-
-                GameObject checkButton = (GameObject)GameObject.Find("Button");
-                Button button = checkButton.GetComponent<Button>();
-
-                button.onClick.AddListener(onButtonClick);
+                Debug.LogError("[CelestialRescale] UI Elements Null");
             }
         }
 
-        public static void onButtonClick()
+        public static void OnCloseButtonClick()
         {
-            ScreenMessages.PostScreenMessage("Closing UI");
             Destroy();
         }
 
