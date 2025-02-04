@@ -26,7 +26,7 @@ namespace CelestialRescale.UI
             {
                 toolbarButton = ApplicationLauncher.Instance.AddModApplication(
                     OnButtonClick,   // Called when clicked
-                    OnButtonClick,   // Called when toggled off
+                    null,   // Called when toggled off
                     null,            // Called when hovered
                     null,            // Called when unhovered
                     null,            // Called when enabled
