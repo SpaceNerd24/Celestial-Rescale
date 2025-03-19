@@ -1,53 +1,13 @@
-﻿using UnityEngine;
-using System;
+﻿using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Reflection;
-using CelestialRescale.API;
 
 namespace CelestialRescale.Utilis
 {
     public static class CR_Utilis
     {
-        // not currently needed
-        public static string MODID = "Celestial_Rescale";
-        public static string MODNAME = "Celestial Rescale";
-
-        internal static Dictionary<string, FloatCurve> bodyPresureCurvesDictionary =
-            new Dictionary<string, FloatCurve>();
-        internal static Dictionary<string, FloatCurve> bodyTempCurvesDictionary =
-            new Dictionary<string, FloatCurve>();
-
-        internal static PQSCity kscCity = null;
-        internal static double originalLatitude;
-        internal static double originalLongitude;
-        internal static Vector3 KSCOrignalPOS;
-
-        internal static void LoadDictionaries()
-        {
-            Debug.Log("Testing the new Dictionary system");
-            foreach (CelestialBody body in FlightGlobals.Bodies)
-            {
-                bodyPresureCurvesDictionary.Add(body.name, body.atmospherePressureCurve);
-                bodyTempCurvesDictionary.Add(body.name, body.atmosphereTemperatureCurve);
-            }
-        }
-
-        internal static void LoadKSCOriganlPOS()
-        {
-            foreach (PQSCity city in Resources.FindObjectsOfTypeAll<PQSCity>())
-            {
-                if (city.name == "KSC")
-                {
-                    kscCity = city;
-                    Debug.Log("KSC found");
-                    KSCOrignalPOS = kscCity.repositionRadial;
-                    originalLatitude = kscCity.lat;
-                    originalLongitude = kscCity.lon;
-                    break;
-                }
-            }
-        }
+        // Nothing here rn
     }
 
     public interface Parser1 : Parser2

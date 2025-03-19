@@ -1,8 +1,5 @@
-﻿using CelestialRescale.API;
-using KSP.UI.Screens;
-using System.Collections.Generic;
+﻿using KSP.UI.Screens;
 using System.IO;
-using System.Linq.Expressions;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -25,14 +22,14 @@ namespace CelestialRescale.UI
             if (ApplicationLauncher.Instance != null && toolbarButton == null)
             {
                 toolbarButton = ApplicationLauncher.Instance.AddModApplication(
-                    OnButtonClick,   // Called when clicked
-                    null,   // Called when toggled off
-                    null,            // Called when hovered
-                    null,            // Called when unhovered
-                    null,            // Called when enabled
-                    null,            // Called when disabled
+                    OnButtonClick,
+                    OnButtonClick,
+                    null,
+                    null,
+                    null,
+                    null,
                     ApplicationLauncher.AppScenes.MAINMENU,
-                    GameDatabase.Instance.GetTexture("CelestialRescale/Resources/icon.png", false)
+                    GameDatabase.Instance.GetTexture(Path.Combine(HighLogic.SaveFolder + "GameData/CelestialRescale/Resources/icon.png"), false)
                 );
             }
         }

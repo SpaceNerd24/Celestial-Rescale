@@ -5,13 +5,7 @@ namespace CelestialRescale.API
 {
     public static class CR_API
     {
-        private const double DefaultScaleFactor = 1;
-        private const double DefaultStarFactor = 1;
-        private const double DefaultAtmoFactor = 0;
-        private const double DefaultOffsetFactor = 1;
-        private const bool DefaultDebug = false;
-
-        private static double GetConfigValue(string key, double defaultValue)
+        private static double GetConfigValue(string key)
         {
             foreach (ConfigNode node in GameDatabase.Instance.GetConfigNodes("CelestialRescale"))
             {
@@ -20,48 +14,51 @@ namespace CelestialRescale.API
                     return parsedValue;
                 }
             }
-            return defaultValue;
+            return 0;
         }
 
-        private static bool GetConfigValue(string key, bool defaultValue)
+        private static bool GetConfigValue(string key, bool IsBoolean)
         {
-            foreach (ConfigNode node in GameDatabase.Instance.GetConfigNodes("CelestialRescale"))
+            if (IsBoolean)
             {
-                if (bool.TryParse(node.GetValue(key), out bool parsedValue))
+                foreach (ConfigNode node in GameDatabase.Instance.GetConfigNodes("CelestialRescale"))
                 {
-                    return parsedValue;
+                    if (bool.TryParse(node.GetValue(key), out bool parsedValue))
+                    {
+                        return parsedValue;
+                    }
                 }
             }
-            return defaultValue;
+            return false;
         }
 
         public static double GetScaleFactor()
         {
-            return GetConfigValue("scaleFactor1", DefaultScaleFactor);
+            return GetConfigValue("scaleFactor1");
         }
         public static float GetScaleFactor2()
         {
-            return ((float)GetConfigValue("scaleFactor1", DefaultScaleFactor));
+            return ((float)GetConfigValue("scaleFactor1"));
         }
 
         public static double GetStarFactor()
         {
-            return GetConfigValue("scaleFactor1", DefaultStarFactor) / 1.75;
+            return GetConfigValue("scaleFactor1") / 1.75;
         }
 
         public static double GetAtmoFactor()
         {
-            return GetConfigValue("atmoFactor1", DefaultAtmoFactor);
+            return GetConfigValue("atmoFactor1");
         }
 
         public static double GetOffsetFactor()
         {
-            return GetConfigValue("offsetFactor1", DefaultOffsetFactor);
+            return GetConfigValue("offsetFactor1");
         }
 
         public static bool GetDebug()
         {
-            return GetConfigValue("isDebug", DefaultDebug);
+            return GetConfigValue("isDebug", true);
         }
 
         public static void ToggleUI()
