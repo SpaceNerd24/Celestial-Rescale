@@ -14,12 +14,14 @@ namespace CelestialRescale
         internal double starFactor;
         internal double atmoFactor;
         internal double offsetFactor;
+        internal string version = "1.0.0";
 
         internal bool isDebug;
 
         public void ConfigLoader()
         {
-            Debug.Log("Starting the Config Loader");
+            Debug.Log("[CelestialRescale] Celestial Rescale version " + version + " starting");
+            Debug.Log("[CelestialRescale] Starting the Config Loader");
 
             // main overall config
             foreach (ConfigNode node in GameDatabase.Instance.GetConfigNodes("CelestialRescale"))
@@ -76,13 +78,17 @@ namespace CelestialRescale
             {
                 if (body != null && body.isStar == true)
                 {
+                    // Star
+
                     body.Mass *= starFactor;
                     body.Radius *= starFactor;
+
                     ResizeOrbits(body);
                     FixScaledSpace(body);
                 }
                 else if (body != null && scaleFactor <= 100 && body.pqsController == null)
                 {
+                    // Gas Giant?
 
                     Debug.Log("[CelestialRescale]" + " [" + body.name + "] " + body.name);
 
@@ -101,8 +107,10 @@ namespace CelestialRescale
                     {
                         Debug.Log("[CelestialRescale]" + " [" + body.name + "] " + body.Radius + " new radius");
                     }
+
                     ResizeOrbits(body);
                     FixScaledSpace(body);
+
                     if (body.atmosphere)
                     {
                         ResizeAtmosphere(body, atmoFactor);
@@ -110,6 +118,8 @@ namespace CelestialRescale
                 }
                 else if (body != null && body.pqsController != null && scaleFactor <= 100)
                 {
+                    // Normal
+
                     body.pqsController.ResetSphere();
 
                     Debug.Log("[CelestialRescale]" + " [" + body.name + "] " + body.name);

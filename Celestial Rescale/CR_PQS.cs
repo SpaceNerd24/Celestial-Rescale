@@ -9,7 +9,7 @@ namespace CelestialRescale.PQS
         {
             if (body == null)
             {
-                Debug.Log("[Celestial Rescale] No body to fix PQS on");
+                Debug.LogError("[Celestial Rescale] No body to fix PQS on");
                 return;
             }
 
@@ -26,7 +26,6 @@ namespace CelestialRescale.PQS
             {
                 body.oceanFogDensityPQSMult *= ((float)scaleFactor);
                 body.oceanFogPQSDepth *= scaleFactor;
-                Debug.Log("[CelestialRescale]" + " [" + body.name + "] " + body.oceanFogPQSDepth);
             }
 
             body.pqsController.RebuildSphere();

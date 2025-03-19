@@ -82,7 +82,6 @@
     <Compile Include="CR_UI.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="CR_Utilis.cs" />
-    <Compile Include="CR_Version.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

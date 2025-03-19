@@ -1,4 +1,5 @@
-﻿using KSP.UI.Screens;
+﻿using Expansions.Missions.Flow;
+using KSP.UI.Screens;
 using System.IO;
 using System.Reflection;
 using UnityEngine;
@@ -29,7 +30,7 @@ namespace CelestialRescale.UI
                     null,
                     null,
                     ApplicationLauncher.AppScenes.MAINMENU,
-                    GameDatabase.Instance.GetTexture(Path.Combine(HighLogic.SaveFolder + "GameData/CelestialRescale/Resources/icon.png"), false)
+                    GameDatabase.Instance.GetTexture(Path.Combine(KSPUtil.ApplicationRootPath, "GameData", "CelestialRescale", "Resorces", "Icon.png"), false)
                 );
             }
         }
@@ -92,6 +93,7 @@ namespace CelestialRescale.UI
         private static Vector2 pos;
 
         private const string CloseButtonName = "CloseButton";
+        private const string OpenButtonName = "OpenButton";
         private const string VersionObjectName = "Version";
 
         public void Awake()
@@ -132,14 +134,18 @@ namespace CelestialRescale.UI
 
             GameObject checkButton = GameObject.Find(CloseButtonName);
             GameObject versionObject = GameObject.Find(VersionObjectName);
+            GameObject openButton = GameObject.Find(OpenButtonName);
 
-            if (versionObject != null && checkButton != null)
+            if (versionObject != null && checkButton != null && openButton != null)
             {
                 Text versionText = versionObject.GetComponent<Text>();
                 versionText.text = CR_Version.version;
 
                 Button button = checkButton.GetComponent<Button>();
                 button.onClick.AddListener(OnCloseButtonClick);
+
+                Button button2 = openButton.GetComponent<Button>();
+                button2.onClick.AddListener(OnOpenButtonClick);
             }
             else
             {
@@ -150,6 +156,18 @@ namespace CelestialRescale.UI
         public static void OnCloseButtonClick()
         {
             Destroy();
+        }
+
+        public static void OnOpenButtonClick()
+        {
+            string path = Path.Combine(KSPUtil.ApplicationRootPath, "GameData", "CelestialRescale");
+
+            if (!Directory.Exists(path))
+            {
+                Debug.LogError("[CelestialRescale] Celestial Rescale Folder doesn't exsist?");
+            }
+
+            Application.OpenURL("file:///" + path.Replace("\\", "/"));
         }
 
         public void OnBeginDrag(PointerEventData data)
