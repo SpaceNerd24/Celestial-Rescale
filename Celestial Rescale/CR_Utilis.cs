@@ -7,7 +7,8 @@ namespace CelestialRescale.Utilis
 {
     public static class CR_Utilis
     {
-        // Nothing here rn
+        public static string version = "1.0.0";
+
     }
 
     public interface Parser1 : Parser2

@@ -14,13 +14,12 @@ namespace CelestialRescale
         internal double starFactor;
         internal double atmoFactor;
         internal double offsetFactor;
-        internal string version = "1.0.0";
 
         internal bool isDebug;
 
         public void ConfigLoader()
         {
-            Debug.Log("[CelestialRescale] Celestial Rescale version " + version + " starting");
+            Debug.Log("[CelestialRescale] Celestial Rescale version " + CR_Utilis.version + " starting");
             Debug.Log("[CelestialRescale] Starting the Config Loader");
 
             // main overall config

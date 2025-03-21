@@ -1,4 +1,5 @@
-﻿using Expansions.Missions.Flow;
+﻿using CelestialRescale.Utilis;
+using Expansions.Missions.Flow;
 using KSP.UI.Screens;
 using System.IO;
 using System.Reflection;
@@ -139,7 +140,7 @@ namespace CelestialRescale.UI
             if (versionObject != null && checkButton != null && openButton != null)
             {
                 Text versionText = versionObject.GetComponent<Text>();
-                versionText.text = CR_Version.version;
+                versionText.text = CR_Utilis.version;
 
                 Button button = checkButton.GetComponent<Button>();
                 button.onClick.AddListener(OnCloseButtonClick);
