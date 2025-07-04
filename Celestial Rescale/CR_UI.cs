@@ -1,4 +1,5 @@
-﻿using CelestialRescale.Utilis;
+﻿using CelestialRescale.API;
+using CelestialRescale.Utilis;
 using Expansions.Missions.Flow;
 using KSP.UI.Screens;
 using System.IO;
@@ -96,6 +97,8 @@ namespace CelestialRescale.UI
         private const string CloseButtonName = "CloseButton";
         private const string OpenButtonName = "OpenButton";
         private const string VersionObjectName = "Version";
+        private const string ScaleFactorObjectName = "Input 1";
+        private const string AtmoFacotObjectName = "Input 2";
 
         public void Awake()
         {
@@ -136,8 +139,10 @@ namespace CelestialRescale.UI
             GameObject checkButton = GameObject.Find(CloseButtonName);
             GameObject versionObject = GameObject.Find(VersionObjectName);
             GameObject openButton = GameObject.Find(OpenButtonName);
+            GameObject scaleFactorObject = GameObject.Find(ScaleFactorObjectName);
+            GameObject atmoFactorObject = GameObject.Find(AtmoFacotObjectName);
 
-            if (versionObject != null && checkButton != null && openButton != null)
+            if (versionObject != null && checkButton != null && openButton != null && scaleFactorObject != null && atmoFactorObject != null)
             {
                 Text versionText = versionObject.GetComponent<Text>();
                 versionText.text = CR_Utilis.version;
@@ -147,6 +152,12 @@ namespace CelestialRescale.UI
 
                 Button button2 = openButton.GetComponent<Button>();
                 button2.onClick.AddListener(OnOpenButtonClick);
+
+                InputField inputField = scaleFactorObject.GetComponent<InputField>();
+                inputField.text = CR_API.GetScaleFactor().ToString();
+
+                InputField inputField2 = atmoFactorObject.GetComponent<InputField>();
+                inputField2.text = CR_API.GetAtmoFactor().ToString();
             }
             else
             {
